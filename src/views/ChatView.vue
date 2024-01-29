@@ -8,8 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { ref } from 'vue'
 import SenderEnum from '@/model/SenderEnum'
 import MessageClass from '@/model/MessageClass'
-import { SunIcon } from 'lucide-vue-next'
-import { Moon } from 'lucide-vue-next'
+import LightDarkModeButtonComponentVue from '@/components/customUi/LightDarkModeButtonComponent.vue'
 
 const chatArray = ref<MessageClass[]>([])
 const currentInput = ref('')
@@ -19,30 +18,15 @@ function handleSend(content: string, timestamp: Date, sender: SenderEnum) {
   chatArray.value.push(newMessage)
   currentInput.value = ''
 }
-
-function toggleDarkMode() {
-  const body = document.querySelector('body')
-  const isDark = body?.classList.contains('dark')
-
-  isDark ? body?.classList.remove('dark') : body?.classList.add('dark')
-  return isDark
-}
 </script>
 
 <template>
   <main>
-    <div class="flex flex-col h-screen">
+    <div class="flex flex-col h-screen bg-background">
       <div class="w-full">
         Chat interviewer
         <div class="float-right">
-          <Button @click="toggleDarkMode()" variant="ghost">
-            <div v-if="toggleDarkMode()">
-              <Moon />
-            </div>
-            <div v-else>
-              <SunIcon />
-            </div>
-          </Button>
+          <LightDarkModeButtonComponentVue />
         </div>
       </div>
       <ScrollArea class="flex-grow h-full">
