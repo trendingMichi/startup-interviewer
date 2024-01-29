@@ -51,6 +51,9 @@ function handleSend(content: string, timestamp: Date, sender: SenderEnum) {
               <Button @click="handleSend(currentInput, new Date(), SenderEnum.USER)">
                 <div class="flex items-center gap-2">Senden <Navigation class="w-4 h-4" /></div>
               </Button>
+              <Button @click="handleSend(currentInput, new Date(), SenderEnum.AI)">
+                <div class="flex items-center gap-2">Ai response Mock <Navigation class="w-4 h-4" /></div>
+              </Button>
             </div>
           </CardContent>
           <CardFooter>
