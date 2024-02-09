@@ -1,6 +1,6 @@
 <template>
-  <Button @click="toggleDarkMode()" variant="ghost">
-    <div v-if="isDark">
+  <Button @click="toggleDarkMode()" variant="ghost" class="w-10 h-10">
+    <div v-if="DarkModeStore.darkMode">
       <SunIcon />
     </div>
     <div v-else>
@@ -11,15 +11,14 @@
 <script setup lang="ts">
 import { Moon, SunIcon } from 'lucide-vue-next'
 import { Button } from '../ui/button'
-import { ref } from 'vue'
+import { useDarkModeStore } from '@/stores/DarkMode'
 
-const isDark = ref<Boolean | undefined>(false)
+const DarkModeStore = useDarkModeStore()
 
 function toggleDarkMode() {
   const body = document.querySelector('body')
-  isDark.value ? body?.classList.remove('dark') : body?.classList.add('dark')
-  isDark.value = !isDark.value
-
-  return isDark.value
+  DarkModeStore.darkMode ? body?.classList.remove('dark') : body?.classList.add('dark')
+  DarkModeStore.toggleDarkMode()
+  return DarkModeStore.darkMode
 }
 </script>
