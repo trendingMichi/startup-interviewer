@@ -29,7 +29,7 @@
               </AlertDialogTitle>
               <AlertDialogDescription>
               </AlertDialogDescription>
-              <Input type="email" class="my-5" placeholder="Email" />
+              <Input type="email" class="my-5" v-model="email" placeholder="Email" />
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Noch nicht fertig</AlertDialogCancel>
@@ -65,15 +65,15 @@ import { Button } from '../ui/button'
 import { finishConvesation } from '@/http/websocket'
 import { ref } from 'vue'
 
-const email = ref<String>('')
+const email = ref('')
 
 const props = defineProps({
   sessionKey: { type: String }
 })
 
 function endConversation() {
-  console.log(props.sessionKey);
-  
+  console.log(email.value);
+
   finishConvesation(props.sessionKey, email.value);
 }
 
