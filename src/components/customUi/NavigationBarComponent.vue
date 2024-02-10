@@ -13,16 +13,27 @@
       <div class="flex gap-5">
         <AlertDialog>
           <AlertDialogTrigger>
-            <Button>fertig</Button>
+            <Button>Fertig?</Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Dankee</AlertDialogTitle>
-              <AlertDialogDescription> Die daten werden verarbeitet </AlertDialogDescription>
+              <AlertDialogTitle>
+                <div class="text-2xl">
+
+                  Bist du mit deinem Interview fertig?
+                </div>
+              </AlertDialogTitle>
+              Geben deine Emali ein damit wir ein Interview verarbeiten können.
+              <AlertDialogTitle>
+
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+              </AlertDialogDescription>
+              <Input type="email" class="my-5" placeholder="Email" />
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction>Continue</AlertDialogAction>
+              <AlertDialogCancel>Noch nicht fertig</AlertDialogCancel>
+              <AlertDialogAction @click.prevent="endConversation()">Abschicken</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -44,12 +55,27 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
+import { Input } from '@/components/ui/input'
 import LightDarkModeButtonComponent from './LightDarkModeButtonComponent.vue'
 import LogoIcon from '../../assets/images/logoIcon.svg'
 import LogoWhiteIcon from '../../assets/images/logoWhiteIcon.svg'
 import { Separator } from '../ui/separator'
 import { useDarkModeStore } from '@/stores/DarkMode'
 import { Button } from '../ui/button'
+import { finishConvesation } from '@/http/websocket'
+import { ref } from 'vue'
+
+const email = ref<String>('')
+
+const props = defineProps({
+  sessionKey: { type: String }
+})
+
+function endConversation() {
+  console.log(props.sessionKey);
+  
+  finishConvesation(props.sessionKey, email.value);
+}
 
 const DarkModeStore = useDarkModeStore()
 </script>
