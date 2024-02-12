@@ -13,6 +13,7 @@ import NavigationBarComponent from '@/components/customUi/NavigationBarComponent
 import type { AIResponseInterface } from '@/model/AIResponseInterface'
 import Logo from '../assets/images/logo.svg'
 import LogoWhite from '../assets/images/logoWhite.svg'
+
 import Checkbox from '@/components/ui/checkbox/Checkbox.vue'
 import { useDarkModeStore } from '@/stores/DarkMode'
 
@@ -22,19 +23,17 @@ const currentInput = ref('')
 const finished = ref(true)
 const session_key = ref<string>('')
 const formClicked = ref(false)
+const interviewStarted = ref(false)
 
 watch(currentInput, () => {
   if (finished.value === true) {
-    if (currentInput.value === '') {
-      finished.value = false
-    } else {
-      finished.value = true
-    }
+    finished.value = true
   }
 })
 
 function startChat() {
   startConversation((msg: any) => {
+    interviewStarted.value = true
     if (msg['SESSION-KEY']) {
       session_key.value = msg['SESSION-KEY']
       console.log(session_key.value)
@@ -83,6 +82,8 @@ function handleSend(content: string, timestamp: Date, sender: SenderEnum, sessio
     <div class="h-screen flex flex-col">
       <NavigationBarComponent
         :session-key="session_key"
+        :chatArray="chatArray"
+        :interviewStarted="interviewStarted"
         class="sticky top-0"
       ></NavigationBarComponent>
       <ScrollArea class="flex-1">
@@ -116,23 +117,26 @@ function handleSend(content: string, timestamp: Date, sender: SenderEnum, sessio
             </p>
           </div>
           <!-- <div class="text-center text-lg font-semibold px-36 pt-10">Some Werbung</div> -->
-          <div class="flex items-center space-x-2 pt-20 pb-5">
-            <input type="checkbox" id="terms" v-model="formClicked" />
-            <label
-              for="terms"
-              class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Ich habe die
-              <u
-                ><a href="https://www.trendingtopics.eu/datenschutz/" target="_blank"
-                  >Datenschutzerklärung</a
-                ></u
+          <div v-if="!interviewStarted" class="flex items-center space-x-2 pt-20 pb-5">
+            <div class="max-w-[30rem]">
+              <input type="checkbox" id="terms" v-model="formClicked" />
+              <label
+                for="terms"
+                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-              gelesen und verstanden, dass der Inhalt dieses Interviews von der ausgewählten AI (+
-              dessen Anbieter) und Trending Topics verarbeitet wird.
-            </label>
+                Ich habe die
+                <u
+                  ><a href="https://www.trendingtopics.eu/datenschutz/" target="_blank"
+                    >Datenschutzerklärung</a
+                  ></u
+                >
+                gelesen und verstanden, dass der Inhalt dieses Interviews von der ausgewählten AI (+
+                dessen Anbieter) und Trending Topics verarbeitet wird.
+              </label>
+            </div>
           </div>
-          <div class="">
+
+          <div class="" v-if="formClicked">
             <Button @click="startChat()">Interview starten</Button>
           </div>
         </div>
@@ -140,7 +144,7 @@ function handleSend(content: string, timestamp: Date, sender: SenderEnum, sessio
       <div class="flex justify-center">
         <Card class="w-[70rem]">
           <CardHeader> </CardHeader>
-          <CardContent v-if="formClicked">
+          <CardContent v-if="interviewStarted">
             <div class="flex justify-center items-center gap-7">
               <Input
                 @keyup.enter="
@@ -175,7 +179,7 @@ function handleSend(content: string, timestamp: Date, sender: SenderEnum, sessio
                   >
                 </p>
                 <p>
-                  <a href="https://newsrooms.ai/" target="_blank">newsrooms.ai</a>
+                  <a href="https://newsrooms.ai/" target="_blank">Newsrooms</a>
                 </p>
               </div>
             </div>

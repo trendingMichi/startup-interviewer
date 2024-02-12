@@ -5,6 +5,8 @@ import { Separator } from '@/components/ui/separator'
 import SenderEnum from '@/model/SenderEnum'
 import Logo from '../../assets/images/logoIcon.svg'
 import LogoWhite from '../../assets/images/logoWhiteIcon.svg'
+import Brain from '../../assets/images/Newsrooms_Brain.png'
+import BrainBlack from '../../assets/images/Newsrooms_Brain_Black.png'
 import { ref, watch } from 'vue'
 import { useDarkModeStore } from '@/stores/DarkMode'
 
@@ -37,10 +39,10 @@ watch(state, () => {
           </div>
           <div v-else class="flex gap-2">
             <div v-if="!DarkModeStore.darkMode">
-              <img :src="Logo" alt="Logo" class="w-7" />
+              <img :src="BrainBlack" alt="Logo" class="w-10" />
             </div>
             <div v-else>
-              <img :src="LogoWhite" alt="Logo" class="w-7" />
+              <img :src="Brain" alt="Logo" class="w-10" />
             </div>
             <div class="text-lg font-semibold">Startup Interviewer</div>
           </div>
@@ -51,7 +53,10 @@ watch(state, () => {
           :id="timestamp"
         >
           <div>
-            <p class="leading-7 [&:not(:first-child)]:mt-6 fade-in-5" :class="{ 'mt-6': !props.finished }">
+            <p
+              class="leading-7 [&:not(:first-child)]:mt-6 fade-in-5"
+              :class="{ 'mt-6': !props.finished }"
+            >
               {{ props.message?.content }}
               <template v-if="!props.finished">⚫</template>
             </p>
