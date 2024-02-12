@@ -75,6 +75,13 @@ function handleSend(content: string, timestamp: Date, sender: SenderEnum, sessio
   })
   currentInput.value = ''
 }
+
+function iAbbrechen() {
+  chatArray.value = null
+  session_key.value = null
+  currentInput.value = null
+  interviewStarted.value = false
+}
 </script>
 
 <template>
@@ -84,6 +91,7 @@ function handleSend(content: string, timestamp: Date, sender: SenderEnum, sessio
         :session-key="session_key"
         :chatArray="chatArray"
         :interviewStarted="interviewStarted"
+        @update:iAbbrechen="iAbbrechen"
         class="sticky top-0"
       ></NavigationBarComponent>
       <ScrollArea class="flex-1">

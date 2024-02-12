@@ -13,6 +13,23 @@
       <div class="flex gap-5">
         <AlertDialog v-if="props.interviewStarted">
           <AlertDialogTrigger>
+            <Button>Interview Abbrechen</Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                <div class="text-2xl">Willst du dein Interview wirklich abbrechen?</div>
+              </AlertDialogTitle>
+              Falls du dein Interview jetzt abbrichst, wird es nicht an uns gesendet und kann nicht
+              veröffentlicht werden. Vorsicht, damit verwirfst du den ganzen Fortschritt!
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel @click.prevent="abbrechen()">Abbrechen</AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        <AlertDialog v-if="props.interviewStarted">
+          <AlertDialogTrigger>
             <Button>Fertig?</Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -60,8 +77,9 @@ import { Separator } from '../ui/separator'
 import { useDarkModeStore } from '@/stores/DarkMode'
 import { Button } from '../ui/button'
 import { finishConvesation } from '@/http/websocket'
-import { ref, computed } from 'vue'
+import { ref, computed, getCurrentInstance } from 'vue'
 import MessageClass from '@/model/MessageClass'
+import { RouterLink, RouterView, useRouter } from 'vue-router'
 
 const email = ref('')
 
@@ -75,6 +93,22 @@ function endConversation() {
   console.log(email.value)
   console.log(props.chatArray)
   finishConvesation(props.sessionKey, email.value)
+}
+const router = useRouter()
+
+function abbrechen() {
+  // console.log(email.value)
+  // console.log(props.chatArray)
+  // const instance = getCurrentInstance()
+  // if (instance) {
+  //   const emit = instance.emit
+  //   emit('update:iAbbrechen')
+  //   console.log('AAA')
+  // }
+  // router.push('/chat').catch((err) => {
+  //   console.error('Error navigating:', err)
+  // })
+  // TODO: IMPLEMENT RESET
 }
 
 const DarkModeStore = useDarkModeStore()
