@@ -18,9 +18,12 @@ import Checkbox from '@/components/ui/checkbox/Checkbox.vue'
 import { useDarkModeStore } from '@/stores/DarkMode'
 import { useEnglishStore } from '@/stores/UseEnglish'
 
+import { englishWords, germanWords } from '../lib/languages'
+
 const chatArray = ref<MessageClass[]>([])
 const DarkModeStore = useDarkModeStore()
 const EnglishStore = useEnglishStore()
+const { useEnglish, change } = useEnglishStore()
 const currentInput = ref('')
 const finished = ref(true)
 const session_key = ref<string>('')
@@ -63,10 +66,48 @@ function handleReceive(msg: AIResponseInterface, timestamp: Date) {
   }
 }
 
+function detectLanguage(text: string) {
+  // Count occurrences of common English and German words
+  let englishCount = 0
+  let germanCount = 0
+
+  // Convert text to lowercase for case-insensitive comparison
+  const lowerText = text.toLowerCase()
+
+  // Count occurrences of English words
+  for (const word of englishWords) {
+    if (lowerText.includes(word)) {
+      englishCount++
+    }
+  }
+
+  // Count occurrences of German words
+  for (const word of germanWords) {
+    if (lowerText.includes(word)) {
+      germanCount++
+    }
+  }
+
+  // Compare counts to determine the language
+  if (englishCount > germanCount) {
+    return true
+  } else if (germanCount > englishCount) {
+    return false
+  } else {
+    // Default to English if counts are equal
+    return null
+  }
+}
+
 function handleSend(content: string, timestamp: Date, sender: SenderEnum, session_key: string) {
   if (session_key === '') {
     return null
   }
+
+  if (detectLanguage(content) != null) {
+    change(detectLanguage(content))
+  }
+
   const newMessage = new MessageClass(timestamp, content, sender, true)
   chatArray.value.push(newMessage)
   console.log(session_key)
@@ -112,12 +153,15 @@ function iAbbrechen() {
           v-else
           class="flex-grow flex flex-1 flex-col mx-auto h-full w-[70rem] pt-36 items-center"
         >
-          <div v-if="!DarkModeStore.darkMode">
-            <img :src="Logo" alt="Logo" class="w-72 h-20" />
+          <div class="flex justify-center space-x-2">
+            <div v-if="!DarkModeStore.darkMode">
+              <img :src="Logo" alt="Logo" class="w-72 h-20" />
+            </div>
+            <div v-else>
+              <img :src="LogoWhite" alt="Logo" class="w-72 h-20" />
+            </div>
           </div>
-          <div v-else>
-            <img :src="LogoWhite" alt="Logo" class="w-72 h-20" />
-          </div>
+
           <h1 class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
             Startup-Interviewer 🚀
           </h1>

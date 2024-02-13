@@ -128,12 +128,14 @@ const props = defineProps({
   interviewStarted: { type: Boolean, default: false }
 })
 
+const router = useRouter()
+
 function endConversation() {
   console.log(email.value)
   console.log(props.chatArray)
   finishConvesation(props.sessionKey, email.value)
+  router.push({ name: 'finish', params: { mail: email.value } })
 }
-const router = useRouter()
 
 function abbrechen() {
   // console.log(email.value)

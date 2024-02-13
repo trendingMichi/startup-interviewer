@@ -7,5 +7,8 @@ export const useEnglishStore = defineStore('useEnglish', () => {
   function toggleEnglish() {
     useEnglish.value = !useEnglish.value
   }
-  return { useEnglish, toggleEnglish }
+  function change(change:boolean) {
+    useEnglish.value = change
+  }
+  return { useEnglish, toggleEnglish, change }
 })

@@ -19,8 +19,8 @@ function toggleEnglish() {
   !EnglishStore.useEnglish ? body?.classList.remove('english') : body?.classList.add('english')
   return EnglishStore.useEnglish
 }
-const router = useRouter()
-router.push('/chat')
+// const router = useRouter()
+// router.push('/chat')
 toggleDarkMode()
 </script>
 
@@ -28,6 +28,7 @@ toggleDarkMode()
   <header>
     <nav>
       <RouterLink to="/chat"></RouterLink>
+      <RouterLink to="/finish"></RouterLink>
     </nav>
   </header>
   <RouterView />
