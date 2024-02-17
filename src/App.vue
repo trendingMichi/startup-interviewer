@@ -27,7 +27,7 @@ toggleDarkMode()
 <template>
   <header>
     <nav>
-      <RouterLink to="/chat"></RouterLink>
+      <RouterLink to="/"></RouterLink>
       <RouterLink to="/finish"></RouterLink>
     </nav>
   </header>

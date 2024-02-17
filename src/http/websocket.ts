@@ -1,6 +1,6 @@
 import type { AIResponseInterface } from '@/model/AIResponseInterface'
 
-const ws = new WebSocket('ws://localhost:8899')
+let ws = new WebSocket('ws://localhost:8899')
 
 export function sendMsg(msg: string, session_key: string) {
   const payload = {
@@ -9,7 +9,6 @@ export function sendMsg(msg: string, session_key: string) {
     },
     'session-key': session_key
   }
-  console.log(session_key)
 
   ws.send(JSON.stringify(payload))
 }
@@ -21,12 +20,16 @@ export function receivedMsg(callback: (response: AIResponseInterface) => void) {
   }
 }
 
-export function startConversation(callback: (response: any) => void) {
-  sendMsg('Hallo', '')
-  receivedMsg(callback)
+export async function startConversation(callback: (response: any) => void) {
+  ws = new WebSocket('ws://localhost:8899')
+
+  ws.onopen = () => {
+    sendMsg('Hallo', '')
+    receivedMsg(callback)
+  }
 }
 
-export function finishConvesation(session_key: string | undefined, email: string) {
+export function finishConversation(session_key: string | undefined, email: string) {
   const payload = {
     type: 'STATUS',
     value: 'FINISH',

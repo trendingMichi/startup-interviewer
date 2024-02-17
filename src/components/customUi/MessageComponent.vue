@@ -3,8 +3,6 @@ import MessageClass from '@/model/MessageClass'
 import { User } from 'lucide-vue-next'
 import { Separator } from '@/components/ui/separator'
 import SenderEnum from '@/model/SenderEnum'
-import Logo from '../../assets/images/logoIcon.svg'
-import LogoWhite from '../../assets/images/logoWhiteIcon.svg'
 import Brain from '../../assets/images/Newsrooms_Brain.png'
 import BrainBlack from '../../assets/images/Newsrooms_Brain_Black.png'
 import { ref, watch } from 'vue'
@@ -37,7 +35,7 @@ watch(state, () => {
             <User />
             <div class="text-lg font-semibold">Du</div>
           </div>
-          <div v-else class="flex gap-2">
+          <div v-else class="flex gap-2 justify-center items-center">
             <div v-if="!DarkModeStore.darkMode">
               <img :src="BrainBlack" alt="Logo" class="w-10" />
             </div>
@@ -54,11 +52,11 @@ watch(state, () => {
         >
           <div>
             <p
-              class="leading-7 [&:not(:first-child)]:mt-6 fade-in-5"
-              :class="{ 'mt-6': !props.finished }"
+              class="leading-7 fade-in-5"
             >
               {{ props.message?.content }}
-              <template v-if="!props.finished">⚫</template>
+              <template v-if="!props.finished && props.message?.sender === SenderEnum.AI && DarkModeStore.darkMode === false">⚫</template>
+              <template v-if="!props.finished && props.message?.sender === SenderEnum.AI && DarkModeStore.darkMode === true">⚪</template>
             </p>
           </div>
         </div>

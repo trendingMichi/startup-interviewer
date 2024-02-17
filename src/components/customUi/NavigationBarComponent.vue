@@ -32,9 +32,7 @@
               publish it. All the progress you made will be gone!
             </AlertDialogHeader>
             <AlertDialogFooter v-if="!EnglishStore.useEnglish">
-              <AlertDialogCancel @click.prevent="abbrechen()"
-                >Interview abbrechen!</AlertDialogCancel
-              >
+              <AlertDialogCancel @click.prevent="abbrechen()">Interview abbrechen!</AlertDialogCancel>
               <AlertDialogAction>Weiter interviewen</AlertDialogAction>
             </AlertDialogFooter>
             <AlertDialogFooter v-else>
@@ -63,9 +61,8 @@
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-              <AlertDialogAction :disabled="!isValidEmail" @click.prevent="endConversation()"
-                >Abschicken</AlertDialogAction
-              >
+              <AlertDialogAction :disabled="!isValidEmail" @click.prevent="endConversation()">Abschicken
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
           <AlertDialogContent v-else>
@@ -81,9 +78,7 @@
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction :disabled="!isValidEmail" @click.prevent="endConversation()"
-                >Send!</AlertDialogAction
-              >
+              <AlertDialogAction :disabled="!isValidEmail" @click.prevent="endConversation()">Send!</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -115,48 +110,35 @@ import { Separator } from '../ui/separator'
 import { useDarkModeStore } from '@/stores/DarkMode'
 import { useEnglishStore } from '@/stores/UseEnglish'
 import { Button } from '../ui/button'
-import { finishConvesation } from '@/http/websocket'
-import { ref, computed, getCurrentInstance } from 'vue'
-import MessageClass from '@/model/MessageClass'
-import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { finishConversation } from '@/http/websocket'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useSessionStore } from '@/stores/SessionStore'
 
 const email = ref('')
 
 const props = defineProps({
-  sessionKey: { type: String },
-  chatArray: { type: MessageClass },
+  sessionKey: String,
   interviewStarted: { type: Boolean, default: false }
 })
 
 const router = useRouter()
-
+const SessionStore = useSessionStore();
 function endConversation() {
   console.log(email.value)
-  console.log(props.chatArray)
-  finishConvesation(props.sessionKey, email.value)
+  finishConversation(props.sessionKey, email.value)
+  SessionStore.resetSession();
   router.push({ name: 'finish', params: { mail: email.value } })
 }
 
 function abbrechen() {
-  // console.log(email.value)
-  // console.log(props.chatArray)
-  // const instance = getCurrentInstance()
-  // if (instance) {
-  //   const emit = instance.emit
-  //   emit('update:iAbbrechen')
-  //   console.log('AAA')
-  // }
-  // router.push('/chat').catch((err) => {
-  //   console.error('Error navigating:', err)
-  // })
-  // TODO: IMPLEMENT RESET
+  SessionStore.resetSession;
 }
 
 const DarkModeStore = useDarkModeStore()
 const EnglishStore = useEnglishStore()
 
 const isValidEmail = computed(() => {
-  // Email validation regex
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailRegex.test(email.value)
 })

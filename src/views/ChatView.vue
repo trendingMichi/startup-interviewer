@@ -17,36 +17,39 @@ import LogoWhite from '../assets/images/logoWhite.svg'
 import Checkbox from '@/components/ui/checkbox/Checkbox.vue'
 import { useDarkModeStore } from '@/stores/DarkMode'
 import { useEnglishStore } from '@/stores/UseEnglish'
-
+import { useSessionStore } from '@/stores/SessionStore'
 import { englishWords, germanWords } from '../lib/languages'
+import { Separator } from '@/components/ui/separator'
 
 const chatArray = ref<MessageClass[]>([])
 const DarkModeStore = useDarkModeStore()
 const EnglishStore = useEnglishStore()
-const { useEnglish, change } = useEnglishStore()
+const { change } = useEnglishStore()
 const currentInput = ref('')
 const finished = ref(true)
-const session_key = ref<string>('')
+const SessionStore = useSessionStore()
 const formClicked = ref(false)
 const interviewStarted = ref(false)
-
 watch(currentInput, () => {
   if (finished.value === true) {
     finished.value = true
   }
 })
 
+watch(EnglishStore, () => {
+  formClicked.value = false
+})
+
 function startChat() {
   startConversation((msg: any) => {
     interviewStarted.value = true
-    if (msg['SESSION-KEY']) {
-      session_key.value = msg['SESSION-KEY']
-      console.log(session_key.value)
+    if (msg['session-key']) {
+      SessionStore.session = msg['session-key']
     }
     const newTimestamp = new Date()
-
     handleReceive(msg, newTimestamp)
   })
+
 }
 
 function handleReceive(msg: AIResponseInterface, timestamp: Date) {
@@ -121,7 +124,7 @@ function handleSend(content: string, timestamp: Date, sender: SenderEnum, sessio
 
 function iAbbrechen() {
   chatArray.value = null
-  session_key.value = null
+  SessionStore.resetSession();
   currentInput.value = null
   interviewStarted.value = false
 }
@@ -130,15 +133,10 @@ function iAbbrechen() {
 <template>
   <main>
     <div class="h-screen flex flex-col">
-      <NavigationBarComponent
-        :session-key="session_key"
-        :chatArray="chatArray"
-        :interviewStarted="interviewStarted"
-        @update:iAbbrechen="iAbbrechen"
-        class="sticky top-0"
-      ></NavigationBarComponent>
-      <ScrollArea class="flex-1">
-        <div v-if="session_key !== ''" class="bg-background">
+      <NavigationBarComponent :session-key="SessionStore.session" :chatArray="chatArray" :interviewStarted="interviewStarted"
+        @update:iAbbrechen="iAbbrechen" class="sticky top-0"></NavigationBarComponent>
+      <ScrollArea class="flex-1 ">
+        <div v-if="SessionStore.session !== ''" class="bg-background">
           <div class="flex flex-col w-[80rem] mx-auto">
             <div class="flex-1">
               <div class="bg-background">
@@ -149,10 +147,7 @@ function iAbbrechen() {
             </div>
           </div>
         </div>
-        <div
-          v-else
-          class="flex-grow flex flex-1 flex-col mx-auto h-full w-[70rem] pt-36 items-center"
-        >
+        <div v-else class="flex-grow flex flex-1 flex-col mx-auto h-full w-[70rem] pt-36 items-center">
           <div class="flex justify-center space-x-2">
             <div v-if="!DarkModeStore.darkMode">
               <img :src="Logo" alt="Logo" class="w-72 h-20" />
@@ -176,43 +171,31 @@ function iAbbrechen() {
           <!-- <div class="text-center text-lg font-semibold px-36 pt-10">Some Werbung</div> -->
           <div v-if="!interviewStarted" class="flex items-center space-x-2 pt-20 pb-5">
             <div v-if="!EnglishStore.useEnglish" class="max-w-[30rem]">
-              <input type="checkbox" id="terms" v-model="formClicked" />
-              <label
-                for="terms"
-                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
+              <Checkbox id="terms" :default-checked="formClicked" :checked="formClicked"
+                @update:checked="() => (formClicked = !formClicked)" />
+              <label for="terms"
+                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 Ich habe die
-                <u
-                  ><a href="https://www.trendingtopics.eu/datenschutz/" target="_blank"
-                    >Datenschutzerklärung</a
-                  ></u
-                >
+                <u><a href="https://www.trendingtopics.eu/datenschutz/" target="_blank">Datenschutzerklärung</a></u>
                 gelesen und verstanden, dass der Inhalt dieses Interviews von der ausgewählten AI (+
                 dessen Anbieter) und Trending Topics verarbeitet wird.
               </label>
             </div>
             <div v-else class="max-w-[30rem]">
-              <input type="checkbox" id="terms" v-model="formClicked" />
-              <label
-                for="terms"
-                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
+              <Checkbox id="terms" :default-checked="formClicked" :checked="formClicked"
+                @update:checked="() => (formClicked = !formClicked)" />
+              <label for="terms"
+                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 I herby agree that I have read and understood the
-                <u
-                  ><a href="https://www.trendingtopics.eu/datenschutz/" target="_blank"
-                    >Privacy Policy</a
-                  ></u
-                >
+                <u><a href="https://www.trendingtopics.eu/datenschutz/" target="_blank">Privacy Policy</a></u>
                 and am fully aware that the contents of this interview is not only being processed
                 by Trending Topics but also the chosen AI and its provider.
               </label>
             </div>
           </div>
 
-          <div class="" v-if="formClicked">
-            <Button v-if="!EnglishStore.useEnglish" @click="startChat()">Interview starten</Button>
-            <Button v-else @click="startChat()">Start Interview</Button>
-          </div>
+          <Button v-if="!EnglishStore.useEnglish" @click="startChat()" :disabled="!formClicked">Interview starten</Button>
+          <Button v-else @click="startChat()" :disabled="!formClicked">Start Interview</Button>
         </div>
       </ScrollArea>
       <div class="flex justify-center">
@@ -220,22 +203,13 @@ function iAbbrechen() {
           <CardHeader> </CardHeader>
           <CardContent v-if="interviewStarted">
             <div class="flex justify-center items-center gap-7">
-              <Input
-                @keyup.enter="
-                  finished
-                    ? handleSend(currentInput, new Date(), SenderEnum.USER, session_key)
-                    : null
-                "
-                class="w-[50rem] p-6 text-base"
-                v-model="currentInput"
-                :placeholder="
-                  !EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'
-                "
-              />
-              <Button
-                @click="handleSend(currentInput, new Date(), SenderEnum.USER, session_key)"
-                :disabled="!finished"
-              >
+              <Input @keyup.enter="
+                finished
+                  ? handleSend(currentInput, new Date(), SenderEnum.USER, SessionStore.session)
+                  : null" class="w-[50rem] p-6 text-base" v-model="currentInput"
+                :placeholder="!EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'" />
+              <Button @click="handleSend(currentInput, new Date(), SenderEnum.USER, SessionStore.session)"
+                :disabled="!finished">
                 <div v-if="!EnglishStore.useEnglish" class="flex items-center gap-2">
                   Senden
                   <Navigation class="w-4 h-4" />
@@ -250,30 +224,33 @@ function iAbbrechen() {
           <CardFooter>
             <div class="flex justify-center w-full">
               <div v-if="!EnglishStore.useEnglish" class="flex items-center gap-2">
-                <p>
+                <Button variant="link">
                   <a href="https://www.trendingtopics.eu/imprint/" target="_blank">Impressum</a>
-                </p>
-                <p>
-                  <a href="https://www.trendingtopics.eu/datenschutz/" target="_blank"
-                    >Datenschutzerklärung</a
-                  >
-                </p>
-                <p>
+                </Button>
+                <Separator orientation="vertical" />
+                <Button variant="link">
+                  <a href="https://www.trendingtopics.eu/datenschutz/" target="_blank">Datenschutzerklärung</a>
+                </Button>
+                <Separator orientation="vertical" />
+
+                <Button variant="link">
                   <a href="https://newsrooms.ai/" target="_blank">Newsrooms</a>
-                </p>
+                </Button>
               </div>
               <div v-else class="flex items-center gap-2">
-                <p>
+                <Button variant="link">
                   <a href="https://www.trendingtopics.eu/imprint/" target="_blank">Imprint</a>
-                </p>
-                <p>
-                  <a href="https://www.trendingtopics.eu/datenschutz/" target="_blank"
-                    >Privacy Policy</a
-                  >
-                </p>
-                <p>
+                </Button>
+                <Separator orientation="vertical" />
+
+                <Button variant="link">
+                  <a href="https://www.trendingtopics.eu/datenschutz/" target="_blank">Privacy Policy</a>
+                </Button>
+                <Separator orientation="vertical" />
+
+                <Button variant="link">
                   <a href="https://newsrooms.ai/" target="_blank">Newsrooms</a>
-                </p>
+                </Button>
               </div>
             </div>
           </CardFooter>

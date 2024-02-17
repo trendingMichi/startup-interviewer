@@ -1,31 +1,22 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-
-import MessageClass from '@/model/MessageClass'
-
-import { useDarkModeStore } from '@/stores/DarkMode'
+import { useRouter } from 'vue-router'
 import { useEnglishStore } from '@/stores/UseEnglish'
-
-import Logo from '../assets/images/logo.svg'
-import LogoWhite from '../assets/images/logoWhite.svg'
-
 import NavigationBarComponent from '@/components/customUi/NavigationBarComponent.vue'
+import NewsRoomAiLogo from '../assets/images/logo.svg'
+import NewsRoomAiLogoWhite from '../assets/images/logoWhite.svg'
+import TrendingtopicsLogo from '../assets/images/trendingTopics.svg'
+import TrendingtopicsLogoWhite from '../assets/images/trendingTopicsWhite.svg'
+import { useDarkModeStore } from '@/stores/DarkMode'
 
-const DarkModeStore = useDarkModeStore()
 const EnglishStore = useEnglishStore()
-
-const route = useRoute()
-const chatArray = route.params.chatArray
+const DarkModeStore = useDarkModeStore()
+const router = useRouter()
 </script>
 
 <template>
   <NavigationBarComponent class="sticky top-0"></NavigationBarComponent>
   <div class="finish h-screen flex flex-col items-center">
-    <h1
-      v-if="!EnglishStore.useEnglish"
-      class="scroll-m-20 m-10 text-4xl font-extrabold tracking-tight lg:text-5xl"
-    >
+    <h1 v-if="!EnglishStore.useEnglish" class="scroll-m-20 m-10 text-4xl font-extrabold tracking-tight lg:text-5xl">
       Fertig 🎉
     </h1>
     <h1 v-else class="scroll-m-20 m-10 text-4xl font-extrabold tracking-tight lg:text-5xl">
@@ -39,7 +30,31 @@ const chatArray = route.params.chatArray
         Thanks! We send the interview to our team 🖊️
       </p>
     </div>
-    <router-link to="/chat" class="text-blue-500 hover:underline mt-8">Back to Chat</router-link>
+    <div class="flex flex-col items-center gap-5">
+      <h4 v-if="!EnglishStore.useEnglish" class=" pt-10 scroll-m-20 text-xl font-semibold tracking-tight">
+        Was wir auch machen! </h4>
+      <h4 v-else class=" pt-10 scroll-m-20 text-xl font-semibold tracking-tight">What we do!</h4>
+      <div v-if="DarkModeStore.darkMode" class="flex gap-7">
+        <a href="https://www.trendingtopics.eu/">
+          <img :src="TrendingtopicsLogoWhite" alt="TrendingtopicsLogo"
+            class="border h-16 p-3 rounded-sm hover:cursor-pointer">
+        </a>
+        <a href="https://newsrooms.ai/">
+          <img :src="NewsRoomAiLogoWhite" alt="NewsRoomAiLogo"
+            class="w-52 h-16 p-3 border rounded-sm hover:cursor-pointer">
+        </a>
+      </div>
+      <div v-else class="flex gap-10">
+        <a href="https://www.trendingtopics.eu/">
+          <img :src="TrendingtopicsLogo" alt="TrendingtopicsLogo" class="border h-16 p-3 rounded-sm hover:cursor-pointer">
+        </a>
+        <a href="https://newsrooms.ai/">
+          <img :src="NewsRoomAiLogo" alt="NewsRoomAiLogo" class="w-52 h-16 p-3 border rounded-sm hover:cursor-pointer">
+        </a>
+
+      </div>
+    </div>
+    <router-link to="/" class="text-blue-500 hover:underline mt-8">Back to Chat</router-link>
   </div>
 </template>
 

@@ -1,6 +1,5 @@
 import { useLocalStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
 
 export const useEnglishStore = defineStore('useEnglish', () => {
   const useEnglish = useLocalStorage("useEnglish", false)  
