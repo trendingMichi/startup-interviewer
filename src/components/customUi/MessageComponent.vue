@@ -25,7 +25,7 @@ watch(state, () => {
 
 <template>
   <main>
-    <div class="mx-28" :class="{ 'justify-end': props.message?.sender === SenderEnum.USER }">
+    <div class="md:mx-28" :class="{ 'justify-end': props.message?.sender === SenderEnum.USER }">
       <div class="flex flex-col">
         <div
           class="px-10 pt-7 flex"

@@ -123,21 +123,22 @@ function handleSend(content: string, timestamp: Date, sender: SenderEnum, sessio
 }
 
 function iAbbrechen() {
-  chatArray.value = null
+  chatArray.value.length = 0;
   SessionStore.resetSession();
-  currentInput.value = null
+  currentInput.value = ""
   interviewStarted.value = false
 }
 </script>
 
 <template>
   <main>
-    <div class="h-screen flex flex-col">
-      <NavigationBarComponent :session-key="SessionStore.session" :chatArray="chatArray" :interviewStarted="interviewStarted"
-        @update:iAbbrechen="iAbbrechen" class="sticky top-0"></NavigationBarComponent>
-      <ScrollArea class="flex-1 ">
+    <div class="h-screen flex flex-col overflow-hidden">
+      <NavigationBarComponent :session-key="SessionStore.session" :chatArray="chatArray"
+        :interviewStarted="interviewStarted" @update:iAbbrechen="iAbbrechen" class="sticky top-0">
+      </NavigationBarComponent>
+      <ScrollArea class="flex-1">
         <div v-if="SessionStore.session !== ''" class="bg-background">
-          <div class="flex flex-col w-[80rem] mx-auto">
+          <div class="flex flex-col md:w-[80rem] md:mx-auto ">
             <div class="flex-1">
               <div class="bg-background">
                 <div v-for="(message, index) in chatArray" :key="index">
@@ -147,7 +148,8 @@ function iAbbrechen() {
             </div>
           </div>
         </div>
-        <div v-else class="flex-grow flex flex-1 flex-col mx-auto h-full w-[70rem] pt-36 items-center">
+        <div v-else
+          class="flex-grow flex flex-1 flex-col mx-auto h-full md:w-[70rem] p-10 md:pt-36 items-center justify-center">
           <div class="flex justify-center space-x-2">
             <div v-if="!DarkModeStore.darkMode">
               <img :src="Logo" alt="Logo" class="w-72 h-20" />
@@ -157,11 +159,11 @@ function iAbbrechen() {
             </div>
           </div>
 
-          <h1 class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+          <h1 class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center">
             Startup-Interviewer 🚀
           </h1>
           <div class="pt-5">
-            <p v-if="!EnglishStore.useEnglish" class="text-xl text-muted-foreground">
+            <p v-if="!EnglishStore.useEnglish" class="text-xl text-muted-foreground text-center">
               Starte hier dein AI-Interview mit Trending Topics. Voll automatisiert!
             </p>
             <p v-else class="text-xl text-muted-foreground">
@@ -206,7 +208,7 @@ function iAbbrechen() {
               <Input @keyup.enter="
                 finished
                   ? handleSend(currentInput, new Date(), SenderEnum.USER, SessionStore.session)
-                  : null" class="w-[50rem] p-6 text-base" v-model="currentInput"
+                  : null" class="md:w-[50rem]  w-auto p-6 text-base" v-model="currentInput"
                 :placeholder="!EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'" />
               <Button @click="handleSend(currentInput, new Date(), SenderEnum.USER, SessionStore.session)"
                 :disabled="!finished">
@@ -222,7 +224,7 @@ function iAbbrechen() {
             </div>
           </CardContent>
           <CardFooter>
-            <div class="flex justify-center w-full">
+            <div class="md:justify-center mx-auto md:flex hidden">
               <div v-if="!EnglishStore.useEnglish" class="flex items-center gap-2">
                 <Button variant="link">
                   <a href="https://www.trendingtopics.eu/imprint/" target="_blank">Impressum</a>

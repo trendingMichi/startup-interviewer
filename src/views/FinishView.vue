@@ -15,7 +15,7 @@ const router = useRouter()
 
 <template>
   <NavigationBarComponent class="sticky top-0"></NavigationBarComponent>
-  <div class="finish h-screen flex flex-col items-center">
+  <div class="finish h-screen flex flex-col items-center px-6">
     <h1 v-if="!EnglishStore.useEnglish" class="scroll-m-20 m-10 text-4xl font-extrabold tracking-tight lg:text-5xl">
       Fertig 🎉
     </h1>
@@ -23,7 +23,7 @@ const router = useRouter()
       Finished 🎉
     </h1>
     <div class="pt-0">
-      <p v-if="!EnglishStore.useEnglish" class="text-xl text-muted-foreground">
+      <p v-if="!EnglishStore.useEnglish" class="text-xl text-muted-foreground text-center">
         Danke! Wir haben das Interview gespeichert und unserem Team geschickt 🖊️
       </p>
       <p v-else class="text-xl text-muted-foreground">

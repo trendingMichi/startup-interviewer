@@ -11,36 +11,39 @@
         <span class="font-bold">Startup Interviewer</span>
       </div>
       <div class="flex gap-5">
-        <AlertDialog v-if="props.interviewStarted">
-          <AlertDialogTrigger>
-            <Button v-if="!EnglishStore.useEnglish">Interview Abbrechen</Button>
-            <Button v-else>Abort Interview</Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader v-if="!EnglishStore.useEnglish">
-              <AlertDialogTitle>
-                <div class="text-2xl">Willst du dein Interview wirklich abbrechen?</div>
-              </AlertDialogTitle>
-              Falls du dein Interview jetzt abbrichst, wird es nicht an uns gesendet und kann nicht
-              veröffentlicht werden. Vorsicht, damit verwirfst du den ganzen Fortschritt!
-            </AlertDialogHeader>
-            <AlertDialogHeader v-else>
-              <AlertDialogTitle>
-                <div class="text-2xl">Are you sure about aborting this interview?</div>
-              </AlertDialogTitle>
-              If you abort now, the interview will not be sent to us and we will not be able to
-              publish it. All the progress you made will be gone!
-            </AlertDialogHeader>
-            <AlertDialogFooter v-if="!EnglishStore.useEnglish">
-              <AlertDialogCancel @click.prevent="abbrechen()">Interview abbrechen!</AlertDialogCancel>
-              <AlertDialogAction>Weiter interviewen</AlertDialogAction>
-            </AlertDialogFooter>
-            <AlertDialogFooter v-else>
-              <AlertDialogCancel @click.prevent="abbrechen()">Cancel Interview!</AlertDialogCancel>
-              <AlertDialogAction>Proceed Interview</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <div class="md:block hidden">
+
+          <AlertDialog v-if="props.interviewStarted">
+            <AlertDialogTrigger>
+              <Button v-if="!EnglishStore.useEnglish">Interview Abbrechen</Button>
+              <Button v-else>Abort Interview</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader v-if="!EnglishStore.useEnglish">
+                <AlertDialogTitle>
+                  <div class="text-2xl">Willst du dein Interview wirklich abbrechen?</div>
+                </AlertDialogTitle>
+                Falls du dein Interview jetzt abbrichst, wird es nicht an uns gesendet und kann nicht
+                veröffentlicht werden. Vorsicht, damit verwirfst du den ganzen Fortschritt!
+              </AlertDialogHeader>
+              <AlertDialogHeader v-else>
+                <AlertDialogTitle>
+                  <div class="text-2xl">Are you sure about aborting this interview?</div>
+                </AlertDialogTitle>
+                If you abort now, the interview will not be sent to us and we will not be able to
+                publish it. All the progress you made will be gone!
+              </AlertDialogHeader>
+              <AlertDialogFooter v-if="!EnglishStore.useEnglish">
+                <AlertDialogCancel @click.prevent="abbrechen()">Interview abbrechen!</AlertDialogCancel>
+                <AlertDialogAction>Weiter interviewen</AlertDialogAction>
+              </AlertDialogFooter>
+              <AlertDialogFooter v-else>
+                <AlertDialogCancel @click.prevent="abbrechen()">Cancel Interview!</AlertDialogCancel>
+                <AlertDialogAction>Proceed Interview</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
         <AlertDialog v-if="props.interviewStarted">
           <AlertDialogTrigger v-if="!EnglishStore.useEnglish">
             <Button>Fertig?</Button>
