@@ -220,8 +220,8 @@ function iAbbrechen() {
                 >
                 und die
                 <u><a href="https://staging.newsrooms.ai/tos" target="_blank">AGB</a></u>
-                x gelesen und verstanden, dass der Inhalt dieses Interviews von der ausgewählten AI
-                (+ dessen Anbieter) und Trending Topics verarbeitet wird.
+                gelesen und verstanden, dass der Inhalt dieses Interviews von der ausgewählten AI (+
+                dessen Anbieter) und Trending Topics verarbeitet wird.
               </label>
             </div>
             <div v-else class="max-w-[30rem]">
