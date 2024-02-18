@@ -264,12 +264,7 @@ function iAbbrechen() {
                       @getCode="getCaptchaCode"
                       @isValid="checkValidCaptcha"
                     />
-                    <Input
-                      v-if="!DarkModeStore.darkMode"
-                      type="text"
-                      class="mb-6"
-                      v-model="inputValue"
-                    />
+                    <Input type="text" class="mb-6" v-model="inputValue" />
                   </AlertDialogHeader>
                 </AlertDialogContent>
               </AlertDialog>
