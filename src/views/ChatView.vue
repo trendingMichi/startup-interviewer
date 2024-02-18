@@ -14,32 +14,42 @@ import type { AIResponseInterface } from '@/model/AIResponseInterface'
 import Logo from '../assets/images/logo.svg'
 import LogoWhite from '../assets/images/logoWhite.svg'
 import { Separator } from '@/components/ui/separator'
-
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import Checkbox from '@/components/ui/checkbox/Checkbox.vue'
 import { useDarkModeStore } from '@/stores/DarkMode'
 import { useEnglishStore } from '@/stores/UseEnglish'
-
+import { useSessionStore } from '@/stores/SessionStore'
 import { englishWords, germanWords } from '../lib/languages'
+import { onMounted, onBeforeUnmount } from 'vue';
 
 import VueClientRecaptcha from 'vue-client-recaptcha'
 
 const chatArray = ref<MessageClass[]>([])
 const DarkModeStore = useDarkModeStore()
 const EnglishStore = useEnglishStore()
-const { useEnglish, change } = useEnglishStore()
+const { change } = useEnglishStore()
 const currentInput = ref('')
 const finished = ref(true)
-const session_key = ref<string>('')
+const SessionStore = useSessionStore()
 const formClicked = ref(false)
 const interviewStarted = ref(false)
 const captchaFinished = ref(false)
-const inputValue = ref(null)
+const inputValue = ref('')
+
+window.onbeforeunload = function ()
+ {
+     return "";
+ };
 
 const getCaptchaCode = (value) => {
   /* you can access captcha code */
 }
 const checkValidCaptcha = (value) => {
-  /* expected return boolean if your value and captcha code are same return True otherwise return False */
   captchaFinished.value = value
 }
 
@@ -49,13 +59,15 @@ watch(currentInput, () => {
   }
 })
 
+watch(EnglishStore, () => {
+  formClicked.value = false
+})
+
 function startChat() {
-  captchaFinished.value = false
   startConversation((msg: any) => {
     interviewStarted.value = true
-    if (msg['SESSION-KEY']) {
-      session_key.value = msg['SESSION-KEY']
-      console.log(session_key.value)
+    if (msg['session-key']) {
+      SessionStore.session = msg['session-key']
     }
     const newTimestamp = new Date()
 
@@ -81,34 +93,28 @@ function handleReceive(msg: AIResponseInterface, timestamp: Date) {
 }
 
 function detectLanguage(text: string) {
-  // Count occurrences of common English and German words
   let englishCount = 0
   let germanCount = 0
 
-  // Convert text to lowercase for case-insensitive comparison
   const lowerText = text.toLowerCase()
 
-  // Count occurrences of English words
   for (const word of englishWords) {
     if (lowerText.includes(word)) {
       englishCount++
     }
   }
 
-  // Count occurrences of German words
   for (const word of germanWords) {
     if (lowerText.includes(word)) {
       germanCount++
     }
   }
 
-  // Compare counts to determine the language
   if (englishCount > germanCount) {
     return true
   } else if (germanCount > englishCount) {
     return false
   } else {
-    // Default to English if counts are equal
     return null
   }
 }
@@ -134,26 +140,22 @@ function handleSend(content: string, timestamp: Date, sender: SenderEnum, sessio
 }
 
 function iAbbrechen() {
-  chatArray.value = null
-  session_key.value = null
-  currentInput.value = null
+  chatArray.value.length = 0;
+  SessionStore.resetSession();
+  currentInput.value = ""
   interviewStarted.value = false
 }
 </script>
 
 <template>
   <main>
-    <div class="h-screen flex flex-col">
-      <NavigationBarComponent
-        :session-key="session_key"
-        :chatArray="chatArray"
-        :interviewStarted="interviewStarted"
-        @update:iAbbrechen="iAbbrechen"
-        class="sticky top-0"
-      ></NavigationBarComponent>
+    <div class="h-screen flex flex-col overflow-hidden">
+      <NavigationBarComponent :session-key="SessionStore.session" :chatArray="chatArray"
+        :interviewStarted="interviewStarted" @update:iAbbrechen="iAbbrechen" class="sticky top-0">
+      </NavigationBarComponent>
       <ScrollArea class="flex-1">
-        <div v-if="session_key !== ''" class="bg-background">
-          <div class="flex flex-col w-[80rem] mx-auto">
+        <div v-if="SessionStore.session !== ''" class="bg-background">
+          <div class="flex flex-col md:w-[80rem] md:mx-auto ">
             <div class="flex-1">
               <div class="bg-background">
                 <div v-for="(message, index) in chatArray" :key="index">
@@ -163,10 +165,8 @@ function iAbbrechen() {
             </div>
           </div>
         </div>
-        <div
-          v-else
-          class="flex-grow flex flex-1 flex-col mx-auto h-full w-[70rem] pt-36 items-center"
-        >
+        <div v-else
+          class="flex-grow flex flex-1 flex-col mx-auto h-full md:w-[70rem] p-10 md:pt-36 items-center justify-center">
           <div class="flex justify-center space-x-2">
             <div v-if="!DarkModeStore.darkMode">
               <img :src="Logo" alt="Logo" class="w-72 h-20" />
@@ -176,11 +176,11 @@ function iAbbrechen() {
             </div>
           </div>
 
-          <h1 class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
+          <h1 class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center">
             Startup-Interviewer 🚀
           </h1>
           <div class="pt-5">
-            <p v-if="!EnglishStore.useEnglish" class="text-xl text-muted-foreground">
+            <p v-if="!EnglishStore.useEnglish" class="text-xl text-muted-foreground text-center">
               Starte hier dein AI-Interview mit Trending Topics. Voll automatisiert!
             </p>
             <p v-else class="text-xl text-muted-foreground">
@@ -190,17 +190,12 @@ function iAbbrechen() {
           <!-- <div class="text-center text-lg font-semibold px-36 pt-10">Some Werbung</div> -->
           <div v-if="!interviewStarted" class="flex items-center flex-col space-x-2 pt-5 pb-5">
             <div v-if="!EnglishStore.useEnglish" class="max-w-[30rem]">
-              <input type="checkbox" id="terms" v-model="formClicked" />
-              <label
-                for="terms"
-                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
+              <Checkbox id="terms" :default-checked="formClicked" :checked="formClicked"
+                @update:checked="() => (formClicked = !formClicked)" />
+              <label for="terms"
+                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 Ich habe die
-                <u
-                  ><a href="https://staging.newsrooms.ai/privacy" target="_blank"
-                    >Datenschutzerklärung</a
-                  ></u
-                >
+                <u><a href="https://staging.newsrooms.ai/privacy" target="_blank">Datenschutzerklärung</a></u>
                 und die
                 <u><a href="https://staging.newsrooms.ai/tos" target="_blank">AGB</a></u>
                 x gelesen und verstanden, dass der Inhalt dieses Interviews von der ausgewählten AI
@@ -208,17 +203,13 @@ function iAbbrechen() {
               </label>
             </div>
             <div v-else class="max-w-[30rem]">
-              <input type="checkbox" id="terms" v-model="formClicked" />
-              <label
-                for="terms"
-                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
+              <Checkbox id="terms" :default-checked="formClicked" :checked="formClicked"
+                @update:checked="() => (formClicked = !formClicked)" />
+
+              <label for="terms"
+                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 I herby agree that I have read and understood the
-                <u
-                  ><a href="https://staging.newsrooms.ai/privacy" target="_blank"
-                    >Privacy Policy</a
-                  ></u
-                >
+                <u><a href="https://staging.newsrooms.ai/privacy" target="_blank">Privacy Policy</a></u>
                 as well as the
                 <u><a href="https://staging.newsrooms.ai/tos" target="_blank">ToS</a></u>
                 and am fully aware that the contents of this interview is not only being processed
@@ -226,25 +217,26 @@ function iAbbrechen() {
               </label>
             </div>
             <div v-if="!captchaFinished" class="sample-captcha pt-5 pb-5">
-              <VueClientRecaptcha
-                :value="inputValue"
-                @getCode="getCaptchaCode"
-                @isValid="checkValidCaptcha"
-              />
-              <input
-                v-if="!DarkModeStore.darkMode"
-                type="text"
-                class="captcha-input"
-                v-model="inputValue"
-              />
-              <input v-else type="text" class="captcha-input-black" v-model="inputValue" />
+              <AlertDialog :default-open="true" v-if="!captchaFinished">
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      <div v-if="!EnglishStore.useEnglish" class="text-2xl">Fülle das Captcha um fortzusetzen</div>
+                      <div v-else class="text-2xl">Complete the Captcha to continue</div>
+                    </AlertDialogTitle>
+                    <VueClientRecaptcha :value="inputValue" class="flex flex-row-reverse justify-center gap-5  p-10"
+                      @getCode="getCaptchaCode" @isValid="checkValidCaptcha" />
+                    <Input v-if="!DarkModeStore.darkMode" type="text" class="mb-6" v-model="inputValue" />
+                  </AlertDialogHeader>
+                </AlertDialogContent>
+              </AlertDialog>
+
             </div>
           </div>
 
           <div class="" v-if="captchaFinished">
-            <Button v-if="!EnglishStore.useEnglish" :disabled="!formClicked" @click="startChat()"
-              >Interview starten</Button
-            >
+            <Button v-if="!EnglishStore.useEnglish" :disabled="!formClicked" @click="startChat()">Interview
+              starten</Button>
             <Button v-else :disabled="!formClicked" @click="startChat()">Start Interview</Button>
           </div>
         </div>
@@ -254,22 +246,13 @@ function iAbbrechen() {
           <CardHeader> </CardHeader>
           <CardContent v-if="interviewStarted">
             <div class="flex justify-center items-center gap-7">
-              <Input
-                @keyup.enter="
-                  finished
-                    ? handleSend(currentInput, new Date(), SenderEnum.USER, session_key)
-                    : null
-                "
-                class="w-[50rem] p-6 text-base"
-                v-model="currentInput"
-                :placeholder="
-                  !EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'
-                "
-              />
-              <Button
-                @click="handleSend(currentInput, new Date(), SenderEnum.USER, session_key)"
-                :disabled="!finished"
-              >
+              <Input @keyup.enter="
+                finished
+                  ? handleSend(currentInput, new Date(), SenderEnum.USER, SessionStore.session)
+                  : null" class="md:w-[50rem] w-auto p-6 text-base" v-model="currentInput" :placeholder="!EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'
+      " />
+              <Button @click="handleSend(currentInput, new Date(), SenderEnum.USER, SessionStore.session)"
+                :disabled="!finished">
                 <div v-if="!EnglishStore.useEnglish" class="flex items-center gap-2">
                   Senden
                   <Navigation class="w-4 h-4" />
@@ -282,16 +265,14 @@ function iAbbrechen() {
             </div>
           </CardContent>
           <CardFooter>
-            <div class="md:justify-center mx-auto md:flex hidden">
+            <div class="md:justify-center mx-auto md:flex hidden ">
               <div v-if="!EnglishStore.useEnglish" class="flex items-center gap-2">
                 <Button variant="link">
                   <a href="https://www.trendingtopics.eu/imprint/" target="_blank">Impressum</a>
                 </Button>
                 <Separator orientation="vertical" />
                 <Button variant="link">
-                  <a href="https://staging.newsrooms.ai/privacy" target="_blank"
-                    >Datenschutzerklärung</a
-                  >
+                  <a href="https://staging.newsrooms.ai/privacy" target="_blank">Datenschutzerklärung</a>
                 </Button>
                 <Separator orientation="vertical" />
 
@@ -332,18 +313,3 @@ function iAbbrechen() {
   </main>
 </template>
 
-<style scoped>
-.captcha-input {
-  border: 1px solid #cccccc; /* Set border color */
-  border-radius: 4px; /* Optional: Add border radius for rounded corners */
-  padding: 8px; /* Optional: Add padding for better appearance */
-  width: 100%; /* Optional: Set width to fill its container */
-}
-.captcha-input-black {
-  color: black;
-  border: 1px solid #cccccc; /* Set border color */
-  border-radius: 4px; /* Optional: Add border radius for rounded corners */
-  padding: 8px; /* Optional: Add padding for better appearance */
-  width: 100%; /* Optional: Set width to fill its container */
-}
-</style>

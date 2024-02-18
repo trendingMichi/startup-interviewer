@@ -27,10 +27,7 @@ watch(state, () => {
   <main>
     <div class="md:mx-28" :class="{ 'justify-end': props.message?.sender === SenderEnum.USER }">
       <div class="flex flex-col">
-        <div
-          class="px-10 pt-7 flex"
-          :class="{ 'justify-end': props.message?.sender === SenderEnum.USER }"
-        >
+        <div class="px-10 pt-7 flex" :class="{ 'justify-end': props.message?.sender === SenderEnum.USER }">
           <div v-if="props.message?.sender === SenderEnum.USER" class="flex gap-2">
             <User />
             <div class="text-lg font-semibold">Du</div>
@@ -45,18 +42,15 @@ watch(state, () => {
             <div class="text-lg font-semibold">Startup Interviewer</div>
           </div>
         </div>
-        <div
-          class="w-full pb-10 pt-8 flex px-16"
-          :class="{ 'justify-end px-16': props.message?.sender === SenderEnum.USER }"
-          :id="timestamp"
-        >
+        <div class="w-full pb-10 pt-8 flex px-16"
+          :class="{ 'justify-end px-16': props.message?.sender === SenderEnum.USER }" :id="timestamp">
           <div>
-            <p
-              class="leading-7 fade-in-5"
-            >
+            <p class="leading-7 fade-in-5">
               {{ props.message?.content }}
-              <template v-if="!props.finished && props.message?.sender === SenderEnum.AI && DarkModeStore.darkMode === false">⚫</template>
-              <template v-if="!props.finished && props.message?.sender === SenderEnum.AI && DarkModeStore.darkMode === true">⚪</template>
+              <template
+                v-if="!props.finished && props.message?.sender === SenderEnum.AI && DarkModeStore.darkMode === false">⚫</template>
+              <template
+                v-if="!props.finished && props.message?.sender === SenderEnum.AI && DarkModeStore.darkMode === true">⚪</template>
             </p>
           </div>
         </div>
