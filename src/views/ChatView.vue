@@ -197,12 +197,14 @@ function iAbbrechen() {
               >
                 Ich habe die
                 <u
-                  ><a href="https://www.trendingtopics.eu/datenschutz/" target="_blank"
+                  ><a href="https://staging.newsrooms.ai/privacy" target="_blank"
                     >Datenschutzerklärung</a
                   ></u
                 >
-                gelesen und verstanden, dass der Inhalt dieses Interviews von der ausgewählten AI (+
-                dessen Anbieter) und Trending Topics verarbeitet wird.
+                und die
+                <u><a href="https://staging.newsrooms.ai/tos" target="_blank">AGB</a></u>
+                x gelesen und verstanden, dass der Inhalt dieses Interviews von der ausgewählten AI
+                (+ dessen Anbieter) und Trending Topics verarbeitet wird.
               </label>
             </div>
             <div v-else class="max-w-[30rem]">
@@ -213,10 +215,12 @@ function iAbbrechen() {
               >
                 I herby agree that I have read and understood the
                 <u
-                  ><a href="https://www.trendingtopics.eu/datenschutz/" target="_blank"
+                  ><a href="https://staging.newsrooms.ai/privacy" target="_blank"
                     >Privacy Policy</a
                   ></u
                 >
+                as well as the
+                <u><a href="https://staging.newsrooms.ai/tos" target="_blank">ToS</a></u>
                 and am fully aware that the contents of this interview is not only being processed
                 by Trending Topics but also the chosen AI and its provider.
               </label>
@@ -227,7 +231,13 @@ function iAbbrechen() {
                 @getCode="getCaptchaCode"
                 @isValid="checkValidCaptcha"
               />
-              <input type="text" class="captcha-input" v-model="inputValue" />
+              <input
+                v-if="!DarkModeStore.darkMode"
+                type="text"
+                class="captcha-input"
+                v-model="inputValue"
+              />
+              <input v-else type="text" class="captcha-input-black" v-model="inputValue" />
             </div>
           </div>
 
@@ -324,6 +334,13 @@ function iAbbrechen() {
 
 <style scoped>
 .captcha-input {
+  border: 1px solid #cccccc; /* Set border color */
+  border-radius: 4px; /* Optional: Add border radius for rounded corners */
+  padding: 8px; /* Optional: Add padding for better appearance */
+  width: 100%; /* Optional: Set width to fill its container */
+}
+.captcha-input-black {
+  color: black;
   border: 1px solid #cccccc; /* Set border color */
   border-radius: 4px; /* Optional: Add border radius for rounded corners */
   padding: 8px; /* Optional: Add padding for better appearance */
