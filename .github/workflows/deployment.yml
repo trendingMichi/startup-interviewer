@@ -1,0 +1,26 @@
+name: Deployment
+on:
+  push:
+    branches:
+      - main
+  
+jobs:
+  pull_and_deploy:
+    name: pull and deploy
+    runs-on: ubuntu-latest    
+    steps:
+    - name: SSH Remote Commands
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.KEY }}
+        script: 
+          cd ${{ secrets.WORK_DIR }} &&
+          git checkout main &&
+          git pull &&
+          npm install &&
+          npm run build &&
+          rm -rf ~/newsrooms-ai/nginx/webroot-chat-frontend/* &&
+          mv dist/* ~/newsrooms-ai/nginx/webroot-chat-frontend/ &&
+          rm -rf dist
