@@ -54,7 +54,7 @@ const isValidEmail = computed(() => {
 </script>
 <template>
   <main>
-    <div class="w-full flex bg-background h-14 items-center justify-between md:px-6 pr-6">
+    <div class="w-full flex bg-background h-14 items-center justify-between px-6">
       <div class="mx-6 flex items-center space-x-2">
         <div v-if="!DarkModeStore.darkMode">
           <img :src="LogoIcon" alt="Logo" class="w-7 h-7" />
