@@ -39,7 +39,7 @@ const finished = ref(true)
 const SessionStore = useSessionStore()
 const formClicked = ref(false)
 const interviewStarted = ref(false)
-const captchaFinished = ref(false)
+const captchaFinished = ref(true)
 const inputValue = ref('')
 const session_key = ref<string>('')
 
@@ -69,8 +69,10 @@ function startChat() {
   captchaFinished.value = false
   startConversation((msg: any) => {
     interviewStarted.value = true
-    if (msg['SESSION-KEY']) {
-      SessionStore.session = msg['SESSION-KEY']
+    console.log(msg);
+    
+    if (msg['session-key']) {
+      SessionStore.session = msg['session-key']
     }
     const newTimestamp = new Date()
 
