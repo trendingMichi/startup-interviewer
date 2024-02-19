@@ -39,7 +39,7 @@ const finished = ref(true)
 const SessionStore = useSessionStore()
 const formClicked = ref(false)
 const interviewStarted = ref(false)
-const captchaFinished = ref(true)
+const captchaFinished = ref(false)
 const inputValue = ref('')
 const session_key = ref<string>('')
 
