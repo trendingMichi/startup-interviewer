@@ -66,11 +66,10 @@ watch(EnglishStore, () => {
 })
 
 function startChat() {
-  captchaFinished.value = false
   startConversation((msg: any) => {
     interviewStarted.value = true
-    console.log(msg);
-    
+    console.log(msg)
+
     if (msg['session-key']) {
       SessionStore.session = msg['session-key']
     }
