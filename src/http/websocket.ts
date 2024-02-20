@@ -15,7 +15,7 @@ export function sendMsg(msg: string, session_key: string) {
 }
 
 export function receivedMsg(callback: (response: AIResponseInterface) => void) {
-  ws.onmessage = (event) => {
+  ws.onmessage = (event: Any) => {
     const response: AIResponseInterface = JSON.parse(event.data)
     callback(response)
   }
