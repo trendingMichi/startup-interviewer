@@ -1,6 +1,6 @@
 import type { AIResponseInterface } from '@/model/AIResponseInterface'
 
-let ws = new WebSocket('wss://chat.newsrooms.ai/websocket/');
+let ws;
 
 
 export function sendMsg(msg: string, session_key: string) {
