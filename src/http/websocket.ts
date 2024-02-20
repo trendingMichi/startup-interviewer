@@ -1,6 +1,6 @@
 import type { AIResponseInterface } from '@/model/AIResponseInterface'
 
-let ws;
+let ws: any;
 
 
 export function sendMsg(msg: string, session_key: string) {
