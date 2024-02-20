@@ -1,6 +1,6 @@
 import type { AIResponseInterface } from '@/model/AIResponseInterface'
 
-  const ws = new WebSocket('wss://chat.newsrooms.ai/websocket/');
+  let ws: WebSocket;
 
 
 export function sendMsg(msg: string, session_key: string) {
@@ -22,7 +22,7 @@ export function receivedMsg(callback: (response: AIResponseInterface) => void) {
 }
 
 export async function startConversation(callback: (response: any) => void) {
-
+  ws = new WebSocket('wss://chat.newsrooms.ai/websocket/');
 
   ws.onopen = () => {
     sendMsg('Hallo', '')
