@@ -5,7 +5,6 @@ import { Separator } from '@/components/ui/separator'
 import SenderEnum from '@/model/SenderEnum'
 import Brain from '../../assets/images/Newsrooms_Brain.png'
 import BrainBlack from '../../assets/images/Newsrooms_Brain_Black.png'
-import { ref, watch } from 'vue'
 import { useDarkModeStore } from '@/stores/DarkMode'
 
 const props = defineProps({
@@ -16,11 +15,7 @@ const props = defineProps({
 const DarkModeStore = useDarkModeStore()
 
 const timestamp = props.message?.timestamp.toDateString()
-const state = ref<Boolean | undefined>(props.message?.state)
 
-watch(state, () => {
-  console.log(state)
-})
 </script>
 
 <template>
@@ -28,7 +23,7 @@ watch(state, () => {
     <div class="md:mx-28" :class="{ 'justify-end': props.message?.sender === SenderEnum.USER }">
       <div class="flex flex-col">
         <div class="px-10 pt-7 flex" :class="{ 'justify-end': props.message?.sender === SenderEnum.USER }">
-          <div v-if="props.message?.sender === SenderEnum.USER" class="flex gap-2">
+          <div  :id="props.message?.position + 'header'" v-if="props.message?.sender === SenderEnum.USER" class="flex gap-2">
             <User />
             <div class="text-lg font-semibold">Du</div>
           </div>
@@ -45,7 +40,7 @@ watch(state, () => {
         <div class="w-full pb-10 pt-8 flex px-16"
           :class="{ 'justify-end px-16': props.message?.sender === SenderEnum.USER }" :id="timestamp">
           <div>
-            <p class="leading-7 fade-in-5">
+            <p :id="props.message?.position+'p'" class="leading-7 fade-in-5">
               {{ props.message?.content }}
               <template
                 v-if="!props.finished && props.message?.sender === SenderEnum.AI && DarkModeStore.darkMode === false">⚫</template>
@@ -55,7 +50,7 @@ watch(state, () => {
           </div>
         </div>
       </div>
-      <Separator class="[&:last-child]:mb-10" />
+      <Separator :id="props.message?.position" class="[&:last-child]:mb-10" />
     </div>
   </main>
 </template>
