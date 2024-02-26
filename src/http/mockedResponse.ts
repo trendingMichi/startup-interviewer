@@ -15,11 +15,11 @@ export const mockMessages: AIResponseInterface[] = [
   ];
 
 
- export function mockReceiveMessages() {
+ export function mockReceiveMessages(handler: any) {
     let index = 0;
     const interval = setInterval(() => {
       const msg = mockMessages[index];
-       handleReceive(msg, new Date());
+      handler(msg, new Date());
       index++;
   
       // Stop the interval when all mock messages are sent

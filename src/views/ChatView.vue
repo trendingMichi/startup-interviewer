@@ -40,7 +40,6 @@ const formClicked = ref(false)
 const interviewStarted = ref(false)
 const captchaFinished = ref(false)
 const inputValue = ref('')
-
 window.onbeforeunload = function () {
   return ''
 }
@@ -74,35 +73,6 @@ function scrollToMsg(position: string | undefined = undefined) {
   }
 }
 
-const mockMessages: AIResponseInterface[] = [
-  { type: 'STATUS', status: 'BEGIN', session_key: 'mockSessionKey', value: 'BEGIN' },
-  { type: 'TEXT', status: '', session_key: 'mockSessionKey', value: 'Hello! How can I help you today?' },
-  { type: 'TEXT', status: '', session_key: 'mockSessionKey', value: 'Sure, I can assist with that.' },
-  { type: 'TEXT', status: '', session_key: 'mockSessionKey', value: 'Thank you!' },
-  { type: 'TEXT', status: '', session_key: 'mockSessionKey', value: 'Thank you!' },
-  { type: 'TEXT', status: '', session_key: 'mockSessionKey', value: 'Thank you!' },
-  { type: 'TEXT', status: '', session_key: 'mockSessionKey', value: 'Thank you!' },
-  { type: 'TEXT', status: '', session_key: 'mockSessionKey', value: 'Thank you!' },
-  { type: 'TEXT', status: '', session_key: 'mockSessionKey', value: 'Thank you!' },
-  { type: 'TEXT', status: '', session_key: 'mockSessionKey', value: 'Thank you!' },
-  { type: 'STATUS', status: 'END', session_key: 'mockSessionKey', value: 'END' },
-];
-
-
-function mockReceiveMessages() {
-  let index = 0;
-  const interval = setInterval(() => {
-    const msg = mockMessages[index];
-    handleReceive(msg, new Date());
-    index++;
-
-    // Stop the interval when all mock messages are sent
-    if (index === mockMessages.length) {
-      clearInterval(interval);
-    }
-  }, 200); // Adjust the interval as needed
-}
-
 function startChat() {
   startConversation((msg: any) => {
     interviewStarted.value = true
@@ -116,7 +86,6 @@ function startChat() {
 
 
 async function handleReceive(msg: AIResponseInterface, timestamp: Date) {
-  scrollToMsg('header')
   if (msg.value === 'END' && msg.type === 'STATUS') {
     chatArray.value[chatArray.value.length - 1].state = true
     finished.value = true
@@ -125,17 +94,14 @@ async function handleReceive(msg: AIResponseInterface, timestamp: Date) {
   if (msg.value === 'BEGIN' && msg.type === 'STATUS') {
     finished.value = false
     chatArray.value.push(new MessageClass(timestamp, '', SenderEnum.AI, false, chatArray.value.length))
-    await delay(5000);
-
+    scrollToMsg('header');
     return
   }
   const lastMessage = chatArray.value[chatArray.value.length - 1]
   if (lastMessage && msg.value !== 'START' && msg.type !== 'STATUS') {
-    scrollToMsg('p')
-    scrollToMsg()
     lastMessage.content += msg.value
+    scrollToMsg();
   }
-  scrollToMsg()
 }
 
 function detectLanguage(text: string) {
@@ -165,20 +131,20 @@ function detectLanguage(text: string) {
     return false
   }
 }
-//mockReceiveMessages()
 function handleSend(content: string, timestamp: Date, sender: SenderEnum, session_key: string, position: number) {
-  //mockReceiveMessages()
   if (session_key === '') {
     return null
   }
-
   if (detectLanguage(content) != null) {
     change(detectLanguage(content))
   }
   const newMessage = new MessageClass(timestamp, content, sender, true, position)
   chatArray.value.push(newMessage)
+  scrollToMsg()
   sendMsg(newMessage.content, session_key)
+  scrollToMsg()
   receivedMsg((msg: AIResponseInterface) => {
+    scrollToMsg()
     handleReceive(msg, timestamp)
   })
   currentInput.value = ''
