@@ -25,11 +25,10 @@ import { useDarkModeStore } from '@/stores/DarkMode'
 import { useEnglishStore } from '@/stores/UseEnglish'
 import { useSessionStore } from '@/stores/SessionStore'
 import { englishWords, germanWords } from '../lib/languages'
-import { onMounted, onBeforeUnmount } from 'vue'
 
 // @ts-ignore
 import VueClientRecaptcha from 'vue-client-recaptcha'
-
+const delay = (ms: number | undefined) => new Promise(res => setTimeout(res, ms));
 const chatArray = ref<MessageClass[]>([])
 const DarkModeStore = useDarkModeStore()
 const EnglishStore = useEnglishStore()
@@ -41,8 +40,6 @@ const formClicked = ref(false)
 const interviewStarted = ref(false)
 const captchaFinished = ref(false)
 const inputValue = ref('')
-const session_key = ref<string>('')
-
 window.onbeforeunload = function () {
   return ''
 }
@@ -55,44 +52,55 @@ const checkValidCaptcha = (value: any) => {
   captchaFinished.value = value
 }
 
-watch(currentInput, () => {
-  if (finished.value === true) {
-    finished.value = true
-  }
-})
-
 watch(EnglishStore, () => {
   formClicked.value = false
 })
 
+const viewportRef = ref<HTMLElement | null>(null);
+
+function scrollToMsg(position: string | undefined = undefined) {
+  let objDiv: HTMLElement | null = null;
+  const lastMessageId = (chatArray.value.length - 1).toString();
+
+  if (position) {
+    objDiv = document.getElementById(lastMessageId + position);
+  } else {
+    objDiv = document.getElementById(lastMessageId);
+  }
+
+  if (objDiv) {
+    objDiv.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
 function startChat() {
   startConversation((msg: any) => {
     interviewStarted.value = true
-    console.log(msg)
-
     if (msg['session-key']) {
       SessionStore.session = msg['session-key']
     }
     const newTimestamp = new Date()
-
     handleReceive(msg, newTimestamp)
   })
 }
 
-function handleReceive(msg: AIResponseInterface, timestamp: Date) {
+
+async function handleReceive(msg: AIResponseInterface, timestamp: Date) {
   if (msg.value === 'END' && msg.type === 'STATUS') {
     chatArray.value[chatArray.value.length - 1].state = true
     finished.value = true
     return
   }
   if (msg.value === 'BEGIN' && msg.type === 'STATUS') {
-    chatArray.value.push(new MessageClass(timestamp, '', SenderEnum.AI, false))
     finished.value = false
+    chatArray.value.push(new MessageClass(timestamp, '', SenderEnum.AI, false, chatArray.value.length))
+    scrollToMsg('header');
     return
   }
   const lastMessage = chatArray.value[chatArray.value.length - 1]
   if (lastMessage && msg.value !== 'START' && msg.type !== 'STATUS') {
     lastMessage.content += msg.value
+    scrollToMsg();
   }
 }
 
@@ -123,22 +131,20 @@ function detectLanguage(text: string) {
     return false
   }
 }
-
-function handleSend(content: string, timestamp: Date, sender: SenderEnum, session_key: string) {
+function handleSend(content: string, timestamp: Date, sender: SenderEnum, session_key: string, position: number) {
   if (session_key === '') {
     return null
   }
-
   if (detectLanguage(content) != null) {
     change(detectLanguage(content))
   }
-
-  const newMessage = new MessageClass(timestamp, content, sender, true)
+  const newMessage = new MessageClass(timestamp, content, sender, true, position)
   chatArray.value.push(newMessage)
-  console.log(session_key)
-
+  scrollToMsg()
   sendMsg(newMessage.content, session_key)
+  scrollToMsg()
   receivedMsg((msg: AIResponseInterface) => {
+    scrollToMsg()
     handleReceive(msg, timestamp)
   })
   currentInput.value = ''
@@ -147,7 +153,6 @@ function handleSend(content: string, timestamp: Date, sender: SenderEnum, sessio
 function iAbbrechen() {
   chatArray.value = []
   SessionStore.resetSession()
-  session_key.value = ''
   currentInput.value = ''
   interviewStarted.value = false
 }
@@ -156,15 +161,10 @@ function iAbbrechen() {
 <template>
   <main>
     <div class="h-screen flex flex-col overflow-hidden">
-      <NavigationBarComponent
-        :session-key="SessionStore.session"
-        :chatArray="chatArray"
-        :interviewStarted="interviewStarted"
-        @update:iAbbrechen="iAbbrechen"
-        class="sticky top-0"
-      >
+      <NavigationBarComponent :session-key="SessionStore.session" :chatArray="chatArray"
+        :interviewStarted="interviewStarted" @update:iAbbrechen="iAbbrechen" class="sticky top-0">
       </NavigationBarComponent>
-      <ScrollArea class="flex-1">
+      <ScrollArea ref="viewportRef" class="flex-1 scroll-smooth">
         <div v-if="SessionStore.session !== ''" class="bg-background">
           <div class="flex flex-col md:w-[80rem] md:mx-auto">
             <div class="flex-1">
@@ -176,10 +176,8 @@ function iAbbrechen() {
             </div>
           </div>
         </div>
-        <div
-          v-else
-          class="flex-grow flex flex-1 flex-col mx-auto h-full md:w-[70rem] p-10 md:pt-36 items-center justify-center"
-        >
+        <div v-else
+          class="flex-grow flex flex-1 flex-col mx-auto h-full md:w-[70rem] p-10 md:pt-36 items-center justify-center">
           <div class="flex justify-center space-x-2">
             <div v-if="!DarkModeStore.darkMode">
               <img :src="Logo" alt="Logo" class="w-72 h-20" />
@@ -203,22 +201,12 @@ function iAbbrechen() {
           <!-- <div class="text-center text-lg font-semibold px-36 pt-10">Some Werbung</div> -->
           <div v-if="!interviewStarted" class="flex items-center flex-col space-x-2 pt-5 pb-5">
             <div v-if="!EnglishStore.useEnglish" class="max-w-[30rem]">
-              <Checkbox
-                id="terms"
-                :default-checked="formClicked"
-                :checked="formClicked"
-                @update:checked="() => (formClicked = !formClicked)"
-              />
-              <label
-                for="terms"
-                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
+              <Checkbox id="terms" :default-checked="formClicked" :checked="formClicked"
+                @update:checked="() => (formClicked = !formClicked)" />
+              <label for="terms"
+                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 Ich habe die
-                <u
-                  ><a href="https://staging.newsrooms.ai/privacy" target="_blank"
-                    >Datenschutzerklärung</a
-                  ></u
-                >
+                <u><a href="https://staging.newsrooms.ai/privacy" target="_blank">Datenschutzerklärung</a></u>
                 und die
                 <u><a href="https://staging.newsrooms.ai/tos" target="_blank">AGB</a></u>
                 gelesen und verstanden, dass der Inhalt dieses Interviews von der ausgewählten AI (+
@@ -226,23 +214,13 @@ function iAbbrechen() {
               </label>
             </div>
             <div v-else class="max-w-[30rem]">
-              <Checkbox
-                id="terms"
-                :default-checked="formClicked"
-                :checked="formClicked"
-                @update:checked="() => (formClicked = !formClicked)"
-              />
+              <Checkbox id="terms" :default-checked="formClicked" :checked="formClicked"
+                @update:checked="() => (formClicked = !formClicked)" />
 
-              <label
-                for="terms"
-                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
+              <label for="terms"
+                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 I herby agree that I have read and understood the
-                <u
-                  ><a href="https://staging.newsrooms.ai/privacy" target="_blank"
-                    >Privacy Policy</a
-                  ></u
-                >
+                <u><a href="https://staging.newsrooms.ai/privacy" target="_blank">Privacy Policy</a></u>
                 as well as the
                 <u><a href="https://staging.newsrooms.ai/tos" target="_blank">ToS</a></u>
                 and am fully aware that the contents of this interview is not only being processed
@@ -259,12 +237,8 @@ function iAbbrechen() {
                       </div>
                       <div v-else class="text-xl">Please solve this Captcha to continue 🤖</div>
                     </AlertDialogTitle>
-                    <VueClientRecaptcha
-                      :value="inputValue"
-                      class="flex flex-row-reverse justify-center gap-5 p-10"
-                      @getCode="getCaptchaCode"
-                      @isValid="checkValidCaptcha"
-                    />
+                    <VueClientRecaptcha :value="inputValue" class="flex flex-row-reverse justify-center gap-5 p-10"
+                      @getCode="getCaptchaCode" @isValid="checkValidCaptcha" />
                     <Input type="text" class="mb-6" v-model="inputValue" />
                   </AlertDialogHeader>
                 </AlertDialogContent>
@@ -273,9 +247,8 @@ function iAbbrechen() {
           </div>
 
           <div class="" v-if="captchaFinished">
-            <Button v-if="!EnglishStore.useEnglish" :disabled="!formClicked" @click="startChat()"
-              >Interview starten</Button
-            >
+            <Button v-if="!EnglishStore.useEnglish" :disabled="!formClicked" @click="startChat()">Interview
+              starten</Button>
             <Button v-else :disabled="!formClicked" @click="startChat()">Start Interview</Button>
           </div>
         </div>
@@ -285,22 +258,15 @@ function iAbbrechen() {
           <CardHeader> </CardHeader>
           <CardContent v-if="interviewStarted">
             <div class="flex justify-center items-center gap-7">
-              <Input
-                @keyup.enter="
-                  finished
-                    ? handleSend(currentInput, new Date(), SenderEnum.USER, SessionStore.session)
-                    : null
-                "
-                class="md:w-[50rem] w-auto p-6 text-base"
-                v-model="currentInput"
-                :placeholder="
-                  !EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'
-                "
-              />
+              <Input @keyup.enter="
+                finished
+                  ? handleSend(currentInput, new Date(), SenderEnum.USER, SessionStore.session, chatArray.length)
+                  : null
+                " class="md:w-[50rem] w-auto p-6 text-base" v-model="currentInput" :placeholder="!EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'
+    " />
               <Button
-                @click="handleSend(currentInput, new Date(), SenderEnum.USER, SessionStore.session)"
-                :disabled="!finished"
-              >
+                @click="handleSend(currentInput, new Date(), SenderEnum.USER, SessionStore.session, chatArray.length)"
+                :disabled="!finished">
                 <div v-if="!EnglishStore.useEnglish" class="flex items-center gap-2">
                   Senden
                   <Navigation class="w-4 h-4" />
@@ -320,9 +286,7 @@ function iAbbrechen() {
                 </Button>
                 <Separator orientation="vertical" />
                 <Button variant="link">
-                  <a href="https://staging.newsrooms.ai/privacy" target="_blank"
-                    >Datenschutzerklärung</a
-                  >
+                  <a href="https://staging.newsrooms.ai/privacy" target="_blank">Datenschutzerklärung</a>
                 </Button>
                 <Separator orientation="vertical" />
 
