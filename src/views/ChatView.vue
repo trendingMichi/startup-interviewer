@@ -5,55 +5,35 @@ import { Button } from '@/components/ui/button'
 import { Navigation } from 'lucide-vue-next'
 import MessageComponent from '@/components/customUi/MessageComponent.vue'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import SenderEnum from '@/model/SenderEnum'
 import MessageClass from '@/model/MessageClass'
 import { sendMsg, receivedMsg, startConversation } from '@/http/websocket'
 import NavigationBarComponent from '@/components/customUi/NavigationBarComponent.vue'
 import type { AIResponseInterface } from '@/model/AIResponseInterface'
-import Logo from '../assets/images/logo.svg'
-import LogoWhite from '../assets/images/logoWhite.svg'
 import { Separator } from '@/components/ui/separator'
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
-import Checkbox from '@/components/ui/checkbox/Checkbox.vue'
-import { useDarkModeStore } from '@/stores/DarkMode'
 import { useEnglishStore } from '@/stores/UseEnglish'
 import { useSessionStore } from '@/stores/SessionStore'
 import { englishWords, germanWords } from '../lib/languages'
 
 // @ts-ignore
-import VueClientRecaptcha from 'vue-client-recaptcha'
-const delay = (ms: number | undefined) => new Promise(res => setTimeout(res, ms));
+import router from '@/router'
 const chatArray = ref<MessageClass[]>([])
-const DarkModeStore = useDarkModeStore()
 const EnglishStore = useEnglishStore()
 const { change } = useEnglishStore()
 const currentInput = ref('')
 const finished = ref(true)
 const SessionStore = useSessionStore()
-const formClicked = ref(false)
-const interviewStarted = ref(false)
-const captchaFinished = ref(false)
-const inputValue = ref('')
 window.onbeforeunload = function () {
   return ''
 }
 
-const getCaptchaCode = (value: any) => {
-  /* you can access captcha code */
-}
-const checkValidCaptcha = (value: any) => {
-  /* expected return boolean if your value and captcha code are same return True otherwise return False */
-  captchaFinished.value = value
-}
-
-watch(EnglishStore, () => {
-  formClicked.value = false
+onMounted(() => {
+  if (SessionStore.formClicked && SessionStore.captchaFinished) {
+    startChat();
+  } else {
+    router.push('/');
+  }
 })
 
 const viewportRef = ref<HTMLElement | null>(null);
@@ -75,7 +55,6 @@ function scrollToMsg(position: string | undefined = undefined) {
 
 function startChat() {
   startConversation((msg: any) => {
-    interviewStarted.value = true
     if (msg['session-key']) {
       SessionStore.session = msg['session-key']
     }
@@ -154,15 +133,14 @@ function iAbbrechen() {
   chatArray.value = []
   SessionStore.resetSession()
   currentInput.value = ''
-  interviewStarted.value = false
 }
 </script>
 
 <template>
   <main>
     <div class="h-screen flex flex-col overflow-hidden">
-      <NavigationBarComponent :session-key="SessionStore.session" :chatArray="chatArray"
-        :interviewStarted="interviewStarted" @update:iAbbrechen="iAbbrechen" class="sticky top-0">
+      <NavigationBarComponent :session-key="SessionStore.session" :chatArray="chatArray" :interviewStarted="true"
+        @update:iAbbrechen="iAbbrechen" class="sticky top-0">
       </NavigationBarComponent>
       <ScrollArea ref="viewportRef" class="flex-1 scroll-smooth">
         <div v-if="SessionStore.session !== ''" class="bg-background">
@@ -176,93 +154,17 @@ function iAbbrechen() {
             </div>
           </div>
         </div>
-        <div v-else
-          class="flex-grow flex flex-1 flex-col mx-auto h-full md:w-[70rem] p-10 md:pt-36 items-center justify-center">
-          <div class="flex justify-center space-x-2">
-            <div v-if="!DarkModeStore.darkMode">
-              <img :src="Logo" alt="Logo" class="w-72 h-20" />
-            </div>
-            <div v-else>
-              <img :src="LogoWhite" alt="Logo" class="w-72 h-20" />
-            </div>
-          </div>
-
-          <h1 class="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-center">
-            Startup-Interviewer 🚀
-          </h1>
-          <div class="pt-5">
-            <p v-if="!EnglishStore.useEnglish" class="text-xl text-muted-foreground text-center">
-              Starte hier dein AI-Interview mit Trending Topics. Voll automatisiert!
-            </p>
-            <p v-else class="text-xl text-muted-foreground">
-              Start your AI-Interview. Fast & automatic!
-            </p>
-          </div>
-          <!-- <div class="text-center text-lg font-semibold px-36 pt-10">Some Werbung</div> -->
-          <div v-if="!interviewStarted" class="flex items-center flex-col space-x-2 pt-5 pb-5">
-            <div v-if="!EnglishStore.useEnglish" class="max-w-[30rem]">
-              <Checkbox id="terms" :default-checked="formClicked" :checked="formClicked"
-                @update:checked="() => (formClicked = !formClicked)" />
-              <label for="terms"
-                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Ich habe die
-                <u><a href="https://staging.newsrooms.ai/privacy" target="_blank">Datenschutzerklärung</a></u>
-                und die
-                <u><a href="https://staging.newsrooms.ai/tos" target="_blank">AGB</a></u>
-                gelesen und verstanden, dass der Inhalt dieses Interviews von der ausgewählten AI (+
-                dessen Anbieter) und Trending Topics verarbeitet wird.
-              </label>
-            </div>
-            <div v-else class="max-w-[30rem]">
-              <Checkbox id="terms" :default-checked="formClicked" :checked="formClicked"
-                @update:checked="() => (formClicked = !formClicked)" />
-
-              <label for="terms"
-                class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                I herby agree that I have read and understood the
-                <u><a href="https://staging.newsrooms.ai/privacy" target="_blank">Privacy Policy</a></u>
-                as well as the
-                <u><a href="https://staging.newsrooms.ai/tos" target="_blank">ToS</a></u>
-                and am fully aware that the contents of this interview is not only being processed
-                by Trending Topics but also the chosen AI and its provider.
-              </label>
-            </div>
-            <div v-if="!captchaFinished" class="sample-captcha pt-5 pb-5">
-              <AlertDialog :default-open="true" v-if="!captchaFinished">
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      <div v-if="!EnglishStore.useEnglish" class="text-xl">
-                        Bitte löse dieses Captcha, um fortzusetzen 🤖
-                      </div>
-                      <div v-else class="text-xl">Please solve this Captcha to continue 🤖</div>
-                    </AlertDialogTitle>
-                    <VueClientRecaptcha :value="inputValue" class="flex flex-row-reverse justify-center gap-5 p-10"
-                      @getCode="getCaptchaCode" @isValid="checkValidCaptcha" />
-                    <Input type="text" class="mb-6" v-model="inputValue" />
-                  </AlertDialogHeader>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-
-          <div class="" v-if="captchaFinished">
-            <Button v-if="!EnglishStore.useEnglish" :disabled="!formClicked" @click="startChat()">Interview
-              starten</Button>
-            <Button v-else :disabled="!formClicked" @click="startChat()">Start Interview</Button>
-          </div>
-        </div>
       </ScrollArea>
       <div class="flex justify-center">
         <Card class="w-[70rem]">
           <CardHeader> </CardHeader>
-          <CardContent v-if="interviewStarted">
+          <CardContent>
             <div class="flex justify-center items-center gap-7">
               <Input @keyup.enter="
                 finished
                   ? handleSend(currentInput, new Date(), SenderEnum.USER, SessionStore.session, chatArray.length)
                   : null
-                " class="md:w-[50rem] w-auto p-6 text-base" v-model="currentInput" :placeholder="!EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'
+                " class="md:w-[50rem] w-auto md:p-6 text-base" v-model="currentInput" :placeholder="!EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'
     " />
               <Button
                 @click="handleSend(currentInput, new Date(), SenderEnum.USER, SessionStore.session, chatArray.length)"
