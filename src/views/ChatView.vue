@@ -156,9 +156,9 @@ function iAbbrechen() {
         </div>
       </ScrollArea>
       <div class="flex justify-center">
-        <Card class="w-[70rem]">
-          <CardHeader> </CardHeader>
-          <CardContent>
+        <Card class="w-[70rem] p-0">
+          <CardHeader class="md:p-6 p-0"> </CardHeader>
+          <CardContent class="md:p-6 p-2">
             <div class="flex justify-center items-center gap-7">
               <Input @keyup.enter="
                 finished
@@ -180,8 +180,8 @@ function iAbbrechen() {
               </Button>
             </div>
           </CardContent>
-          <CardFooter>
-            <div class="md:justify-center mx-auto md:flex hidden">
+          <CardFooter class="md:justify-center mx-auto md:flex hidden">
+           
               <div v-if="!EnglishStore.useEnglish" class="flex items-center gap-2">
                 <Button variant="link">
                   <a href="https://www.trendingtopics.eu/imprint/" target="_blank">Impressum</a>
@@ -221,7 +221,6 @@ function iAbbrechen() {
                   <a href="https://newsrooms.ai/" target="_blank">Newsrooms</a>
                 </Button>
               </div>
-            </div>
           </CardFooter>
         </Card>
       </div>
