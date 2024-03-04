@@ -10,9 +10,15 @@ const router = createRouter({
       component: FinishView
     },
     {
-      path: '/',
+      path: '/chat',
       name: 'chat',
-      component: () => import('../views/ChatView.vue')
+      component: () => import('../views/ChatView.vue'),
+      props: { valid: true }
+    },
+    {
+      path: '/',
+      name: 'start',
+      component: () => import('../views/StartView.vue')
     }
   ]
 })
