@@ -26,6 +26,10 @@ const inputValue = ref('')
 const router = useRouter()
 const DarkModeStore = useDarkModeStore();
 const EnglishStore = useEnglishStore();
+SessionStore.formClicked = true
+SessionStore.captchaFinished = true
+SessionStore.session = "fasdf";
+
 const getCaptchaCode = (value: any) => {
 }
 const checkValidCaptcha = (value: any) => {

@@ -1,4 +1,5 @@
 import type { AIResponseInterface } from '@/model/AIResponseInterface'
+import type { Files } from 'lucide-vue-next'
 
 let ws: WebSocket
 
@@ -22,8 +23,8 @@ export function receivedMsg(callback: (response: AIResponseInterface) => void) {
 
 export async function startConversation(callback: (response: any) => void) {
   ws = new WebSocket('wss://chat.newsrooms.ai/websocket/')
-  // ws = new WebSocket('ws://localhost:8899');
-  // ws = new WebSocket('ws://127.0.0.1:8075/');
+  // // // ws = new WebSocket('ws://localhost:8899');
+  // // // ws = new WebSocket('ws://127.0.0.1:8075/');
   ws.onopen = () => {
     sendMsg('Hallo', '')
     receivedMsg(callback)
@@ -37,5 +38,20 @@ export function finishConversation(session_key: string | undefined, email: strin
     'session-key': session_key,
     email: email
   }
+  ws.send(JSON.stringify(payload))
+}
+
+export function sendFiles(session_key: string | undefined, file: File, fileContent: ArrayBuffer) {
+  const payload = {
+    data: {
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: file.size,
+      fileContent: Array.from(new Uint8Array(fileContent)) // Convert ArrayBuffer to array of numbers
+    },
+    'session-key': session_key
+  }
+  console.log(JSON.stringify(payload))
+
   ws.send(JSON.stringify(payload))
 }

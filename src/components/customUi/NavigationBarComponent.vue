@@ -19,7 +19,7 @@ import { Separator } from '../ui/separator'
 import { useDarkModeStore } from '@/stores/DarkMode'
 import { useEnglishStore } from '@/stores/UseEnglish'
 import { Button } from '../ui/button'
-import { finishConversation } from '@/http/websocket'
+import { finishConversation, sendFiles } from '@/http/websocket'
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/SessionStore'
@@ -51,6 +51,34 @@ const isValidEmail = computed(() => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailRegex.test(email.value)
 })
+
+function onInput(event: Event) {
+  const inputElement = event.target as HTMLInputElement;
+  const files = inputElement.files;
+  if (files) {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      readFileContents(file);
+    }
+  }
+}
+
+function readFileContents(file: File) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    sendFile(reader.result as ArrayBuffer, file);
+  };
+  reader.onerror = () => {
+    console.error('Error reading file:', reader.error);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function sendFile(fileContent: ArrayBuffer, file: File) {
+  sendFiles(SessionStore.session, file, fileContent);
+}
+
 </script>
 <template>
   <main>
@@ -114,11 +142,11 @@ const isValidEmail = computed(() => {
               <AlertDialogTitle> </AlertDialogTitle>
               <AlertDialogDescription> </AlertDialogDescription>
               <Input type="email" class="my-5" v-model="email" placeholder="... start@up.at" />
+                <Input @change="onInput($event)" type="file" multiple />
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-              <AlertDialogAction :disabled="!isValidEmail" @click.prevent="endConversation()"
-                >Abschicken
+              <AlertDialogAction :disabled="!isValidEmail" @click.prevent="endConversation()">Abschicken
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -132,12 +160,11 @@ const isValidEmail = computed(() => {
               <AlertDialogTitle> </AlertDialogTitle>
               <AlertDialogDescription> </AlertDialogDescription>
               <Input type="email" class="my-5" v-model="email" placeholder="... start@up.at" />
+                <Input @change="onInput($event)" type="file" multiple />
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction :disabled="!isValidEmail" @click.prevent="endConversation()"
-                >Send!</AlertDialogAction
-              >
+              <AlertDialogAction :disabled="!isValidEmail" @click.prevent="endConversation()">Send!</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
