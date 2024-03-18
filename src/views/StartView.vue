@@ -30,6 +30,7 @@ SessionStore.formClicked = true
 SessionStore.captchaFinished = true
 SessionStore.session = "fasdf";
 
+SessionStore.captchaFinished = true
 const getCaptchaCode = (value: any) => {
 }
 const checkValidCaptcha = (value: any) => {

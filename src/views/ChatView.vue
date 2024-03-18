@@ -2,7 +2,7 @@
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Navigation } from 'lucide-vue-next'
+import { Navigation, Paperclip } from 'lucide-vue-next'
 import MessageComponent from '@/components/customUi/MessageComponent.vue'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { onMounted, ref, watch } from 'vue'
@@ -30,7 +30,7 @@ window.onbeforeunload = function () {
 
 onMounted(() => {
   if (SessionStore.formClicked && SessionStore.captchaFinished) {
-    startChat()
+    //startChat()
   } else {
     router.push('/')
   }
@@ -146,13 +146,8 @@ function iAbbrechen() {
 <template>
   <main>
     <div class="h-screen flex flex-col overflow-hidden">
-      <NavigationBarComponent
-        :session-key="SessionStore.session"
-        :chatArray="chatArray"
-        :interviewStarted="true"
-        @update:iAbbrechen="iAbbrechen"
-        class="sticky top-0"
-      >
+      <NavigationBarComponent :session-key="SessionStore.session" :chatArray="chatArray" :interviewStarted="true"
+        @update:iAbbrechen="iAbbrechen" class="sticky top-0">
       </NavigationBarComponent>
       <ScrollArea ref="viewportRef" class="flex-1 scroll-smooth">
         <div v-if="SessionStore.session !== ''" class="bg-background">
@@ -169,39 +164,36 @@ function iAbbrechen() {
       </ScrollArea>
       <div class="flex justify-center">
         <Card class="w-[70rem] p-0">
-          <CardHeader class="md:p-6 p-0"> </CardHeader>
+
           <CardContent class="md:p-6 p-2">
             <div class="flex justify-center items-center gap-7">
-              <Input
-                @keyup.enter="
-                  finished
-                    ? handleSend(
-                        currentInput,
-                        new Date(),
-                        SenderEnum.USER,
-                        SessionStore.session,
-                        chatArray.length
-                      )
-                    : null
-                "
-                class="md:w-[50rem] w-auto md:p-6 text-base"
-                v-model="currentInput"
-                :placeholder="
-                  !EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'
-                "
-              />
-              <Button
-                @click="
-                  handleSend(
-                    currentInput,
-                    new Date(),
-                    SenderEnum.USER,
-                    SessionStore.session,
-                    chatArray.length
-                  )
-                "
-                :disabled="!finished"
-              >
+              <div class="flex h-full items-center gap-2">
+                <Button size="icon" variant="ghost" class="h-12 w-12" @click="selectFile()">
+                  <Paperclip class="w-4 h-4" />
+                  <input type="file" class="hidden" ref="fileInput" @change="handleFileSelect()" />
+                </Button>
+                <Input @keyup.enter="
+        finished
+          ? handleSend(
+            currentInput,
+            new Date(),
+            SenderEnum.USER,
+            SessionStore.session,
+            chatArray.length
+          )
+          : null
+        " class="md:w-[50rem] w-auto h-12 md:p-6 text-base" v-model="currentInput" :placeholder="!EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'
+        " />
+              </div>
+              <Button @click="
+        handleSend(
+          currentInput,
+          new Date(),
+          SenderEnum.USER,
+          SessionStore.session,
+          chatArray.length
+        )
+        " :disabled="!finished">
                 <div v-if="!EnglishStore.useEnglish" class="flex justify-center items-center gap-2">
                   Senden
                   <Navigation class="w-4 h-4" />
@@ -220,9 +212,7 @@ function iAbbrechen() {
               </Button>
               <Separator orientation="vertical" />
               <Button variant="link">
-                <a href="https://staging.newsrooms.ai/privacy" target="_blank"
-                  >Datenschutzerklärung</a
-                >
+                <a href="https://staging.newsrooms.ai/privacy" target="_blank">Datenschutzerklärung</a>
               </Button>
               <Separator orientation="vertical" />
 
