@@ -30,26 +30,26 @@ window.onbeforeunload = function () {
 
 onMounted(() => {
   if (SessionStore.formClicked && SessionStore.captchaFinished) {
-    startChat();
+    startChat()
   } else {
-    router.push('/');
+    router.push('/')
   }
 })
 
-const viewportRef = ref<HTMLElement | null>(null);
+const viewportRef = ref<HTMLElement | null>(null)
 
 function scrollToMsg(position: string | undefined = undefined) {
-  let objDiv: HTMLElement | null = null;
-  const lastMessageId = (chatArray.value.length - 1).toString();
+  let objDiv: HTMLElement | null = null
+  const lastMessageId = (chatArray.value.length - 1).toString()
 
   if (position) {
-    objDiv = document.getElementById(lastMessageId + position);
+    objDiv = document.getElementById(lastMessageId + position)
   } else {
-    objDiv = document.getElementById(lastMessageId);
+    objDiv = document.getElementById(lastMessageId)
   }
 
   if (objDiv) {
-    objDiv.scrollIntoView({ behavior: 'smooth' });
+    objDiv.scrollIntoView({ behavior: 'smooth' })
   }
 }
 
@@ -63,7 +63,6 @@ function startChat() {
   })
 }
 
-
 async function handleReceive(msg: AIResponseInterface, timestamp: Date) {
   if (msg.value === 'END' && msg.type === 'STATUS') {
     chatArray.value[chatArray.value.length - 1].state = true
@@ -72,14 +71,16 @@ async function handleReceive(msg: AIResponseInterface, timestamp: Date) {
   }
   if (msg.value === 'BEGIN' && msg.type === 'STATUS') {
     finished.value = false
-    chatArray.value.push(new MessageClass(timestamp, '', SenderEnum.AI, false, chatArray.value.length))
-    scrollToMsg('header');
+    chatArray.value.push(
+      new MessageClass(timestamp, '', SenderEnum.AI, false, chatArray.value.length)
+    )
+    scrollToMsg('header')
     return
   }
   const lastMessage = chatArray.value[chatArray.value.length - 1]
   if (lastMessage && msg.value !== 'START' && msg.type !== 'STATUS') {
     lastMessage.content += msg.value
-    scrollToMsg();
+    scrollToMsg()
   }
 }
 
@@ -110,7 +111,13 @@ function detectLanguage(text: string) {
     return false
   }
 }
-function handleSend(content: string, timestamp: Date, sender: SenderEnum, session_key: string, position: number) {
+function handleSend(
+  content: string,
+  timestamp: Date,
+  sender: SenderEnum,
+  session_key: string,
+  position: number
+) {
   if (session_key === '') {
     return null
   }
@@ -139,8 +146,13 @@ function iAbbrechen() {
 <template>
   <main>
     <div class="h-screen flex flex-col overflow-hidden">
-      <NavigationBarComponent :session-key="SessionStore.session" :chatArray="chatArray" :interviewStarted="true"
-        @update:iAbbrechen="iAbbrechen" class="sticky top-0">
+      <NavigationBarComponent
+        :session-key="SessionStore.session"
+        :chatArray="chatArray"
+        :interviewStarted="true"
+        @update:iAbbrechen="iAbbrechen"
+        class="sticky top-0"
+      >
       </NavigationBarComponent>
       <ScrollArea ref="viewportRef" class="flex-1 scroll-smooth">
         <div v-if="SessionStore.session !== ''" class="bg-background">
@@ -160,16 +172,37 @@ function iAbbrechen() {
           <CardHeader class="md:p-6 p-0"> </CardHeader>
           <CardContent class="md:p-6 p-2">
             <div class="flex justify-center items-center gap-7">
-              <Input @keyup.enter="
-                finished
-                  ? handleSend(currentInput, new Date(), SenderEnum.USER, SessionStore.session, chatArray.length)
-                  : null
-                " class="md:w-[50rem] w-auto md:p-6 text-base" v-model="currentInput" :placeholder="!EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'
-    " />
+              <Input
+                @keyup.enter="
+                  finished
+                    ? handleSend(
+                        currentInput,
+                        new Date(),
+                        SenderEnum.USER,
+                        SessionStore.session,
+                        chatArray.length
+                      )
+                    : null
+                "
+                class="md:w-[50rem] w-auto md:p-6 text-base"
+                v-model="currentInput"
+                :placeholder="
+                  !EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'
+                "
+              />
               <Button
-                @click="handleSend(currentInput, new Date(), SenderEnum.USER, SessionStore.session, chatArray.length)"
-                :disabled="!finished">
-                <div v-if="!EnglishStore.useEnglish" class="flex items-center gap-2">
+                @click="
+                  handleSend(
+                    currentInput,
+                    new Date(),
+                    SenderEnum.USER,
+                    SessionStore.session,
+                    chatArray.length
+                  )
+                "
+                :disabled="!finished"
+              >
+                <div v-if="!EnglishStore.useEnglish" class="flex justify-center items-center gap-2">
                   Senden
                   <Navigation class="w-4 h-4" />
                 </div>
@@ -180,47 +213,48 @@ function iAbbrechen() {
               </Button>
             </div>
           </CardContent>
-          <CardFooter class="md:justify-center mx-auto md:flex hidden">
-           
-              <div v-if="!EnglishStore.useEnglish" class="flex items-center gap-2">
-                <Button variant="link">
-                  <a href="https://www.trendingtopics.eu/imprint/" target="_blank">Impressum</a>
-                </Button>
-                <Separator orientation="vertical" />
-                <Button variant="link">
-                  <a href="https://staging.newsrooms.ai/privacy" target="_blank">Datenschutzerklärung</a>
-                </Button>
-                <Separator orientation="vertical" />
+          <CardFooter class="justify-center mx-auto flex items-center">
+            <div v-if="!EnglishStore.useEnglish" class="flex items-center gap-2">
+              <Button variant="link">
+                <a href="https://www.trendingtopics.eu/imprint/" target="_blank">Impressum</a>
+              </Button>
+              <Separator orientation="vertical" />
+              <Button variant="link">
+                <a href="https://staging.newsrooms.ai/privacy" target="_blank"
+                  >Datenschutzerklärung</a
+                >
+              </Button>
+              <Separator orientation="vertical" />
 
-                <Button variant="link">
-                  <a href="https://staging.newsrooms.ai/tos" target="_blank">AGB</a>
-                </Button>
-                <Separator orientation="vertical" />
+              <Button variant="link">
+                <a href="https://staging.newsrooms.ai/tos" target="_blank">AGB</a>
+              </Button>
+              <Separator orientation="vertical" />
 
-                <Button variant="link">
-                  <a href="https://newsrooms.ai/" target="_blank">Newsrooms</a>
-                </Button>
-              </div>
-              <div v-else class="flex items-center gap-2">
-                <Button variant="link">
-                  <a href="https://www.trendingtopics.eu/imprint/" target="_blank">Imprint</a>
-                </Button>
-                <Separator orientation="vertical" />
+              <Button variant="link">
+                <a href="https://newsrooms.ai/" target="_blank">Newsrooms</a>
+              </Button>
+            </div>
+            <div v-else class="flex items-center gap-2">
+              <Button variant="link">
+                <a href="https://www.trendingtopics.eu/imprint/" target="_blank">Imprint</a>
+              </Button>
+              <Separator orientation="vertical" />
 
-                <Button variant="link">
-                  <a href="https://staging.newsrooms.ai/privacy" target="_blank">Privacy Policy</a>
-                </Button>
-                <Separator orientation="vertical" />
+              <Button variant="link">
+                <a href="https://staging.newsrooms.ai/privacy" target="_blank">Privacy Policy</a>
+              </Button>
+              <Separator orientation="vertical" />
 
-                <Button variant="link">
-                  <a href="https://staging.newsrooms.ai/tos" target="_blank">Terms of Service</a>
-                </Button>
-                <Separator orientation="vertical" />
+              <Button variant="link">
+                <a href="https://staging.newsrooms.ai/tos" target="_blank">Terms of Service</a>
+              </Button>
+              <Separator orientation="vertical" />
 
-                <Button variant="link">
-                  <a href="https://newsrooms.ai/" target="_blank">Newsrooms</a>
-                </Button>
-              </div>
+              <Button variant="link">
+                <a href="https://newsrooms.ai/" target="_blank">Newsrooms</a>
+              </Button>
+            </div>
           </CardFooter>
         </Card>
       </div>

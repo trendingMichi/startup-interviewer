@@ -22,9 +22,9 @@ export function receivedMsg(callback: (response: AIResponseInterface) => void) {
 }
 
 export async function startConversation(callback: (response: any) => void) {
-  ws = new WebSocket('wss://chat.newsrooms.ai/websocket/')
-  // // // ws = new WebSocket('ws://localhost:8899');
-  // // // ws = new WebSocket('ws://127.0.0.1:8075/');
+  ws = new WebSocket(import.meta.env.VITE_STARTUPINTERVIEWER_BASE_URL);
+  // ws = new WebSocket('ws://localhost:8899');
+  // ws = new WebSocket('ws://127.0.0.1:8075/');
   ws.onopen = () => {
     sendMsg('Hallo', '')
     receivedMsg(callback)
