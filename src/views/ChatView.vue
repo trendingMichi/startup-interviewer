@@ -5,38 +5,59 @@ import { Button } from '@/components/ui/button'
 import { Navigation, Paperclip } from 'lucide-vue-next'
 import MessageComponent from '@/components/customUi/MessageComponent.vue'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import SenderEnum from '@/model/SenderEnum'
 import MessageClass from '@/model/MessageClass'
-import { sendMsg, receivedMsg, startConversation } from '@/http/websocket'
+import { sendMsg, receivedMsg, startConversation, sendFiles } from '@/http/websocket'
 import NavigationBarComponent from '@/components/customUi/NavigationBarComponent.vue'
 import type { AIResponseInterface } from '@/model/AIResponseInterface'
 import { Separator } from '@/components/ui/separator'
 import { useEnglishStore } from '@/stores/UseEnglish'
 import { useSessionStore } from '@/stores/SessionStore'
 import { englishWords, germanWords } from '../lib/languages'
+import { TagsInput, TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInputItemText } from '@/components/ui/tags-input'
 
 // @ts-ignore
 import router from '@/router'
+import { readFileContents } from '@/utils/fileUploader'
 const chatArray = ref<MessageClass[]>([])
 const EnglishStore = useEnglishStore()
 const { change } = useEnglishStore()
 const currentInput = ref('')
 const finished = ref(true)
 const SessionStore = useSessionStore()
+const viewportRef = ref<HTMLElement | null>(null)
+const currentFiles = ref<File[] | undefined>([]);
+// const currentFilesString = ref<string[]| undefined>([]);
+
+
+const currentFilesString = computed<string[] | undefined>({
+  get(): string[] | undefined {
+    return currentFiles.value?.map(obj => obj.name);
+  },
+  set(newValue: string[] | undefined): void {
+    if (newValue) {
+      currentFiles.value = currentFiles.value?.filter(obj => !newValue.includes(obj.name))
+      if(newValue.length === 0){
+        currentFiles.value = []
+      } 
+    }
+  }
+});
+
+
 window.onbeforeunload = function () {
   return ''
 }
 
 onMounted(() => {
   if (SessionStore.formClicked && SessionStore.captchaFinished) {
-    //startChat()
+    startChat()
   } else {
     router.push('/')
   }
 })
 
-const viewportRef = ref<HTMLElement | null>(null)
 
 function scrollToMsg(position: string | undefined = undefined) {
   let objDiv: HTMLElement | null = null
@@ -72,7 +93,8 @@ async function handleReceive(msg: AIResponseInterface, timestamp: Date) {
   if (msg.value === 'BEGIN' && msg.type === 'STATUS') {
     finished.value = false
     chatArray.value.push(
-      new MessageClass(timestamp, '', SenderEnum.AI, false, chatArray.value.length)
+      new MessageClass(timestamp, '', SenderEnum.AI, false, chatArray.value.length, new Array('element1', 'element2')
+)
     )
     scrollToMsg('header')
     return
@@ -107,7 +129,6 @@ function detectLanguage(text: string) {
   } else if (germanCount > englishCount) {
     return false
   } else {
-    // Default to English if counts are equal
     return false
   }
 }
@@ -124,10 +145,16 @@ function handleSend(
   if (detectLanguage(content) != null) {
     change(detectLanguage(content))
   }
-  const newMessage = new MessageClass(timestamp, content, sender, true, position)
+  const newMessage = new MessageClass(timestamp, content, sender, true, position, currentFilesString?.value || [])
   chatArray.value.push(newMessage)
   scrollToMsg()
+  if (currentFiles.value?.length !== 0 && currentFiles.value) {
+    for (let i = 0; i < currentFiles.value.length; i++) {
+      readFileContents(currentFiles.value[i], SessionStore.session)
+    }
+  }
   sendMsg(newMessage.content, session_key)
+
   scrollToMsg()
   receivedMsg((msg: AIResponseInterface) => {
     scrollToMsg()
@@ -136,10 +163,23 @@ function handleSend(
   currentInput.value = ''
 }
 
+
 function iAbbrechen() {
   chatArray.value = []
   SessionStore.resetSession()
   currentInput.value = ''
+}
+
+function handleFileSelect(event: Event) {
+  const inputElement = event.target as HTMLInputElement;
+  const files = inputElement.files;
+  if (files) {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      currentFiles.value?.push(file);
+
+    }
+  }
 }
 </script>
 
@@ -164,15 +204,27 @@ function iAbbrechen() {
       </ScrollArea>
       <div class="flex justify-center">
         <Card class="w-[70rem] p-0">
-
           <CardContent class="md:p-6 p-2">
             <div class="flex justify-center items-center gap-7">
               <div class="flex h-full items-center gap-2">
-                <Button size="icon" variant="ghost" class="h-12 w-12" @click="selectFile()">
+                <Button size="icon" variant="ghost" class="h-12 w-12"
+                  onclick="document.getElementById('fileInput').click()">
                   <Paperclip class="w-4 h-4" />
-                  <input type="file" class="hidden" ref="fileInput" @change="handleFileSelect()" />
+                  <Input type="file" class="hidden" id="fileInput" @change="handleFileSelect($event)" />
                 </Button>
-                <Input @keyup.enter="
+                <TagsInput v-model="currentFilesString">
+                  <TagsInputItem v-for="(item) in currentFilesString" :key="item"
+                    :value="item">
+                    <TagsInputItemText />
+                    <TagsInputItemDelete/>
+                  </TagsInputItem>
+
+                  <TagsInputInput @keyup.enter=" finished ? handleSend(currentInput, new Date(), SenderEnum.USER,
+        SessionStore.session, chatArray.length) : null" class=" md:w-[50rem] h-9 text-base" v-model="currentInput"
+                    :placeholder="!EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'
+        " />
+                </TagsInput>
+                <!-- <Input @keyup.enter="
         finished
           ? handleSend(
             currentInput,
@@ -183,7 +235,7 @@ function iAbbrechen() {
           )
           : null
         " class="md:w-[50rem] w-auto h-12 md:p-6 text-base" v-model="currentInput" :placeholder="!EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'
-        " />
+        " /> -->
               </div>
               <Button @click="
         handleSend(

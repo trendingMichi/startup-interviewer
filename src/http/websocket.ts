@@ -1,5 +1,4 @@
 import type { AIResponseInterface } from '@/model/AIResponseInterface'
-import type { Files } from 'lucide-vue-next'
 
 let ws: WebSocket
 
