@@ -15,6 +15,7 @@ const props = defineProps({
 const DarkModeStore = useDarkModeStore()
 
 const timestamp = props.message?.timestamp.toDateString()
+console.log(props.message?.content);
 
 </script>
 
@@ -42,13 +43,15 @@ const timestamp = props.message?.timestamp.toDateString()
         <div class="w-full pb-10 pt-8 flex px-16"
           :class="{ 'justify-end px-16': props.message?.sender === SenderEnum.USER }" :id="timestamp">
           <div>
-            <p :id="props.message?.position + 'p'" class="leading-7 fade-in-5 snap-y snap-mandatory">
+            <p :id="props.message?.position + 'p'" class="whitespace-pre-line leading-7 fade-in-5 snap-y snap-mandatory">
               {{ props.message?.content }}
               <template
                 v-if="!props.finished && props.message?.sender === SenderEnum.AI && DarkModeStore.darkMode === false">⚫</template>
               <template
                 v-if="!props.finished && props.message?.sender === SenderEnum.AI && DarkModeStore.darkMode === true">⚪</template>
             </p>
+            <div>
+            </div>
           </div>
         </div>
       </div>
