@@ -29,7 +29,7 @@ const SessionStore = useSessionStore()
 const viewportRef = ref<HTMLElement | null>(null)
 const currentFiles = ref<File[] | undefined>([]);
 // const currentFilesString = ref<string[]| undefined>([]);
-
+SessionStore.session = 'asdf'
 
 const currentFilesString = computed<string[] | undefined>({
   get(): string[] | undefined {
@@ -38,9 +38,9 @@ const currentFilesString = computed<string[] | undefined>({
   set(newValue: string[] | undefined): void {
     if (newValue) {
       currentFiles.value = currentFiles.value?.filter(obj => !newValue.includes(obj.name))
-      if(newValue.length === 0){
+      if (newValue.length === 0) {
         currentFiles.value = []
-      } 
+      }
     }
   }
 });
@@ -94,7 +94,7 @@ async function handleReceive(msg: AIResponseInterface, timestamp: Date) {
     finished.value = false
     chatArray.value.push(
       new MessageClass(timestamp, '', SenderEnum.AI, false, chatArray.value.length, new Array('element1', 'element2')
-)
+      )
     )
     scrollToMsg('header')
     return
@@ -154,7 +154,13 @@ function handleSend(
     }
   }
   sendMsg(newMessage.content, session_key)
+  currentFiles.value = []
+  currentFilesString.value = []
+  currentFilesString.value.length = 0
+  currentFiles.value.length = 0
 
+  console.log(currentFiles);
+  
   scrollToMsg()
   receivedMsg((msg: AIResponseInterface) => {
     scrollToMsg()
@@ -212,15 +218,13 @@ function handleFileSelect(event: Event) {
                   <Paperclip class="w-4 h-4" />
                   <Input type="file" class="hidden" id="fileInput" @change="handleFileSelect($event)" />
                 </Button>
-                <TagsInput v-model="currentFilesString">
-                  <TagsInputItem v-for="(item) in currentFilesString" :key="item"
-                    :value="item">
+                <TagsInput v-model="currentFilesString" :update:v-modal="currentFilesString">
+                  <TagsInputItem v-for="(item) in currentFilesString" :key="item" :value="item">
                     <TagsInputItemText />
-                    <TagsInputItemDelete/>
+                    <TagsInputItemDelete />
                   </TagsInputItem>
-
-                  <TagsInputInput @keyup.enter=" finished ? handleSend(currentInput, new Date(), SenderEnum.USER,
-        SessionStore.session, chatArray.length) : null" class=" md:w-[50rem] h-9 text-base" v-model="currentInput"
+                  <Input @keyup.enter=" finished ? handleSend(currentInput, new Date(), SenderEnum.USER,
+        SessionStore.session, chatArray.length) : null" class=" md:w-[50rem] h-9 text-base border-none shadow-none focus:ring-0 focus:ring-offset-0" v-model="currentInput"
                     :placeholder="!EnglishStore.useEnglish ? 'Schreibe eine Nachricht...' : 'Write a message...'
         " />
                 </TagsInput>
